@@ -1,0 +1,115 @@
+html, body{
+	margin: 0px;
+	padding: 0px;
+}
+
+
+
+#game-window{
+	width: 900px;
+	height: 400px;
+	border: 10px groove gold;
+	overflow: scroll;
+}
+
+
+#game-field{
+/*	width: 1500px;
+	height: 1400px;	*/
+	position: relative;
+	
+}
+
+
+#game-field #units{
+	position: relative;/*absolute;*/
+	left:0;
+	top:0;
+	height: 0;
+	width: 0;
+	z-index: 4;
+	
+}
+
+
+#game-field canvas{
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	border:1px solid green;
+}
+
+#game-field canvas.dn{
+	background-color: rgb(100,200,100);/**/
+	z-index: 3;
+}
+
+#game-field canvas.up{
+/*	border:1px solid green;
+	background-color: rgba(250,200,250,128);/**/
+	z-index: 4;
+}
+
+
+#game-rect{
+	position: absolute;
+	background-color: rgba(100,100,200,0.2);
+	border:1px solid rgba(100,100,200,1);
+	z-index: 6;
+
+
+}
+
+
+
+
+
+
+#game-field .unit{
+	position: absolute;
+	border:1px solid yellow;
+}
+
+#game-field .unit.selected{
+	border:1px solid lime;
+}
+
+
+
+
+.unit-man{
+	width: 32px;
+	height: 32px;
+	background-image: url('../images/units/man.bmp');
+
+}
+
+
+
+
+
+
+
+
+
+
+
+.man1{
+	left: 30px;
+	top: 40px;
+	background-position: -32px -64px;
+}
+
+.man2{
+	left: 100px;
+	top: 60px;
+	background-position: -64px -64px;	
+}
+
+
+
+
+
+
+
+
