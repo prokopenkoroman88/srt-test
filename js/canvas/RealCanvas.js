@@ -1,5 +1,5 @@
 import CustomCanvas from './CustomCanvas.js';
-import VirtualCanvas from './canvas/VirtualCanvas.js';
+import VirtualCanvas from './VirtualCanvas.js';
 
 export default class RealCanvas extends CustomCanvas{
 
@@ -54,6 +54,16 @@ export default class RealCanvas extends CustomCanvas{
 		let cm = new VirtualCanvas(h,w);
 		cm.appl(this, kuda, from);
 		return cm;
+	}
+
+
+	put(){
+		this.ctx.putImageData(this.imageData,0,0);
+	}
+
+
+	applImage(img,kuda){
+		this.ctx.drawImage(img, kuda.x, kuda.y, kuda.w, kuda.h);
 	}
 
 

@@ -22,6 +22,15 @@ export default class CustomCanvas {
 
 
 
+	static newImage(src){
+		let img = new Image();
+		//canvas.crossOrigin = 'anonymous';//?
+		img.src = src;//'images/units/man.bmp';
+	}
+
+
+
+
 
 	constructor(){
 		this.height=0;
