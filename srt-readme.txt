@@ -1,4 +1,4 @@
-
+Ôªø
 
 -----------------
 7.11.21
@@ -6,7 +6,7 @@
 D:\STEP\PHP\OSPanel\domains\srt-test
 
 
-ÒÓÁ‰‡Î ÂÔÓÁËÚÓËÈ
+—Å–æ–∑–¥–∞–ª —Ä–µ–ø–æ–∑–∏—Ç–æ—Ä–∏–π
 
 https://github.com/prokopenkoroman88/srt-test
 
@@ -14,7 +14,7 @@ https://github.com/prokopenkoroman88/srt-test
 
 
 
-Öor create a new repository on the command line
+‚Ä¶or create a new repository on the command line
 echo "# srt-test" >> README.md
 git init
 git add README.md
@@ -23,12 +23,12 @@ git branch -M main
 git remote add origin https://github.com/prokopenkoroman88/srt-test.git
 git push -u origin main
 
-Öor push an existing repository from the command line
+‚Ä¶or push an existing repository from the command line
 git remote add origin https://github.com/prokopenkoroman88/srt-test.git
 git branch -M main
 git push -u origin main
 
-Öor import code from another repository
+‚Ä¶or import code from another repository
 You can initialize this repository with code from a Subversion, Mercurial, or TFS project.
 
 
@@ -37,23 +37,23 @@ You can initialize this repository with code from a Subversion, Mercurial, or TF
 
 
 
-ÓÚÍ˚Î Bash
+–æ—Ç–∫—Ä—ã–ª Bash
 
 
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test
 $ git init
 Initialized empty Git repository in D:/STEP/PHP/OSPanel/domains/srt-test/.git/
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git remote add origin https://github.com/prokopenkoroman88/srt-test.git
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git remote -v
 origin  https://github.com/prokopenkoroman88/srt-test.git (fetch)
 origin  https://github.com/prokopenkoroman88/srt-test.git (push)
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git status
 On branch master
 
@@ -69,10 +69,10 @@ Untracked files:
 
 nothing added to commit but untracked files present (use "git add" to track)
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git add .
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git commit -m "create classes for work with canvas"
 [master (root-commit) 9a674ee] create classes for work with canvas
  13 files changed, 842 insertions(+)
@@ -90,7 +90,7 @@ $ git commit -m "create classes for work with canvas"
  create mode 100644 js/system.js
  create mode 100644 srt-readme.txt
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $ git push -u origin master
 Enumerating objects: 20, done.
 Counting objects: 100% (20/20), done.
@@ -103,10 +103,50 @@ To https://github.com/prokopenkoroman88/srt-test.git
  * [new branch]      master -> master
 Branch 'master' set up to track remote branch 'master' from 'origin'.
 
-–ÓÏ‡Ì@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
 $
 
 
+
+
+
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   js/canvas/CustomCanvas.js
+        modified:   js/canvas/RealCanvas.js
+        modified:   srt-readme.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git add .
+
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git commit -m "changes with canvas"
+[master 9a9b207] changes with canvas
+ 3 files changed, 96 insertions(+), 1 deletion(-)
+
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git push -u origin master
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 1.88 KiB | 964.00 KiB/s, done.
+Total 7 (delta 2), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/prokopenkoroman88/srt-test.git
+   9a674ee..9a9b207  master -> master
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+–†–æ–º–∞–Ω@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$
 
 
 
