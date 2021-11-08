@@ -1,3 +1,5 @@
+import PixelColor from './PixelColor.js';
+
 export default class CustomCanvas {
 
 
@@ -62,6 +64,17 @@ export default class CustomCanvas {
 		return rgba;
 	}
 
+	setPixel(x,y,pixel){
+		this.setRGB(x,y,pixel.toArray());
+	}
+
+	getPixel(x,y){
+		let rgba=getRGB(x,y);
+		return new ColorPixel(rgba);
+	}
+
+
+
 	paintRect(x,y,w,h,rgba){//+16.7.21
 		for(let i=0; i<h; i++)
 			for(let j=0; j<w; j++)
@@ -72,9 +85,29 @@ export default class CustomCanvas {
 	applMap(x,y, cm){//(x,y, ColorMap cm)
 		let h=cm.height;
 		let w=cm.width;
+		console.log('applMap',h,w, x, y);
 		for(let i=0; i<h; i++)
-			for(let j=0; j<w; j++)
+			for(let j=0; j<w; j++){
+				//let rgba=cm.getRGB(j,i);
+				//this.setRGB(x+j, y+i, rgba);
+			
+				//if (i>5 && i<15 && j>10 && j<30)
+				//console.log(x,j,y,i,rgba, this.getRGB(x+j, y+i));//rgba
 				this.setRGB(x+j, y+i, cm.getRGB(j,i));
+			}
+	}
+
+	applMapFast(x,y, cm){//(x,y, ColorMap cm)
+		let h=cm.height;
+		let w=cm.width;
+		for(let i=0; i<h; i++){
+			let i0= ((y+i)*this.width+x) * 4;
+			let i1= i*w*4;
+			for(let j=0; j<w*4; j++)
+				//this.setRGB(x+j, y+i, cm.getRGB(j,i));
+				//this.data[ i0 + j ] = cm.data[ i1 + j ];
+				this.data[ i0++ ] = cm.data[ i1++ ];
+		};
 	}
 
 
@@ -91,8 +124,8 @@ export default class CustomCanvas {
 			from.x=0;
 			from.y=0;
 		};
-		if(from.w)from.w=cm.width;
-		if(from.h)from.h=cm.height;
+		if(!from.w)from.w=cm.width;
+		if(!from.h)from.h=cm.height;
 
 		let h=from.h;
 		let w=from.w;

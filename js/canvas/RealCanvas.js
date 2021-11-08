@@ -5,12 +5,25 @@ export default class RealCanvas extends CustomCanvas{
 
 	constructor(selector=''){
 		super();
-		if(selector)
+		//if(selector)
 			this.init(selector);
 	}
 
 
 	init(selector){
+		if(!selector){
+			this.canvas=document.createElement('canvas');
+
+
+			this.canvas.setAttribute('width',320);
+			this.canvas.setAttribute('height',320);
+
+
+
+		//?document.body.append(this.canvas);
+		console.log(this.canvas);
+		}
+		else
 		this.canvas=document.querySelector(selector);//'#game-field canvas'
 		this.ctx = this.canvas.getContext('2d');
 
@@ -63,7 +76,9 @@ export default class RealCanvas extends CustomCanvas{
 
 
 	applImage(img,kuda){
-		this.ctx.drawImage(img, kuda.x, kuda.y, kuda.w, kuda.h);
+		console.log('kuda:');
+		console.log(kuda);
+		this.ctx.drawImage(img, kuda.x, kuda.y);//?//, kuda.w, kuda.h);
 	}
 
 

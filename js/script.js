@@ -2,100 +2,17 @@
 //import Canvas from './canvas.js';
 import ColorMap from './canvas/VirtualCanvas.js';
 import Canvas from './canvas/RealCanvas.js';
+import PixelColor from './canvas/PixelColor.js';
+import Main from './Main.js';
 
 
-
-let gameField=document.querySelector('#game-field');
-
-let gameRect=document.querySelector('#game-rect');
-
-let rect={
-	x0:-1,
-	y0:-1,
-	x1:-1,
-	y1:-1,
-};
-
-
-
-gameField.addEventListener('mousedown', function(e){
-console.log('mousedown');
-
-
-
-let field=e;
-
-//while(field)
-console.log('field.target');
-console.log(field.target);	
+var main = new Main('');
+main.resize(2000,2500);
 
 
 
 
-rect.x0=field.offsetX;
-rect.y0=field.offsetY;
 
-console.log('xy = '+rect.x0 +', '+ rect.y0 );
-console.log(e);
-
-
-});
-
-
-
-
-gameField.addEventListener('mousemove', function(e){
-console.log('mousemove');	
-
-let field=e;//.target;
-
-
-//field.target.parenElement
-
-rect.x1=field.offsetX;
-rect.y1=field.offsetY;
-
-
-//console.log('field.target');
-//console.log(field.target);	
-
-//console.log('xy = '+rect.x1 +', '+ rect.y1 );
-
-
-gameRect.style.top=rect.y0+'px';
-gameRect.style.left=rect.x0+'px';
-
-
-gameRect.style.height=(rect.y1-rect.y0)+'px';
-gameRect.style.width=(rect.x1-rect.x0)+'px';
-
-});
-
-
-
-gameField.addEventListener('mouseup', function(e){
-console.log('mouseup');	
-
-/*
-rect.x0=-1;
-rect.y0=-1;
-rect.x1=-1;
-rect.y1=-1;
-
-console.log('xy = '+rect.x1 +', '+ rect.y1 );
-*/
-
-
-});
-
-
-
-//+3.7.21
-// Создаёт элемент canvas
-var img32 = document.createElement('canvas');
-//var img32 = new Image();
-img32.setAttribute('width',32);
-img32.setAttribute('height',32);
 
 
 
@@ -107,6 +24,13 @@ cm.paintRect(0,0,2,32,[0,64,64,100]);//left
 cm.paintRect(0,30,50,2,[0,64,64,100]);//bottom
 cm.paintRect(48,0,2,32,[0,64,64,100]);//right
 cm.setRGB(10,20,[0,0,255,255]);
+
+
+
+
+
+let pc = new PixelColor('rgba(16,32,48,128)');
+let pc1 = new PixelColor('DodgerBlue');
 
 
 
@@ -122,17 +46,6 @@ function rand(rgba,diap){
 
 
 
-let gf=document.querySelector('#game-field');
-gf.style.height = '2000px';
-gf.style.width = '2500px';
-
-
-var pb = new Canvas('#game-field canvas.dn');
-pb.resize(2000,2500);
-
-var pb2 = new Canvas('#game-field canvas.up');
-pb2.resize(2000,2500);
-pb2.paintRect(0,0,250,200,[255,128,255,100]);//+16.7.21
 
 //?? pb2
 
@@ -158,13 +71,13 @@ png.src = 'images/favicon.png';
 
 png.addEventListener('load',function(){
 //????????//canvas=document.querySelector('#game-field canvas');//'.canvas'
-pb.init('#game-field canvas.dn');
+main.pb.init('#game-field canvas.dn');
 
 let x0=15,y0=3,w=90,h=70;
 //
 
-console.log('canvas.width='+pb.canvas.width);
-console.log('canvas.height='+pb.canvas.height);
+console.log('canvas.width='+main.pb.canvas.width);
+console.log('canvas.height='+main.pb.canvas.height);
 
 //?	ctx.drawImage(img,x0,y0,w,h);
 
@@ -186,17 +99,17 @@ x0=1;y0=13;
 });//png.load
 
 //document.body.
-pb.canvas.onmousemove = function(){
+main.pb.canvas.onmousemove = function(){
 
 //canvas=document.querySelector('.canvas');
 //ctx = canvas.getContext('2d');
 //console.log('canvas.width='+canvas.width);
 //console.log('canvas.height='+canvas.height);
-pb.ctx.beginPath();
-pb.ctx.moveTo(10,94);
-pb.ctx.lineTo(90,94);
+main.pb.ctx.beginPath();
+main.pb.ctx.moveTo(10,94);
+main.pb.ctx.lineTo(90,94);
 
-pb.ctx.stroke();
+main.pb.ctx.stroke();
 };
 
 
@@ -218,7 +131,7 @@ png.style.display='none';
 //img.crossOrigin = 'anonymous';
 //png.crossOrigin = 'anonymous';
 
-var imageData = pb.imageData;//???????????//ctx.getImageData(0, 0, canvas.width, canvas.height);
+var imageData = main.pb.imageData;//???????????//ctx.getImageData(0, 0, canvas.width, canvas.height);
 
 
 x0=5;y0=4;
@@ -231,14 +144,14 @@ x0=5;y0=4;
 console.log('imageData.length='+imageData.data.length);
 
 
-for(let y=0; y<pb.canvas.height; y++){
-	for(let x=0; x<pb.canvas.width; x++){
+for(let y=0; y<main.pb.canvas.height; y++){
+	for(let x=0; x<main.pb.canvas.width; x++){
 
 		if(((y) % 32)==0  )continue;
 		if(((x) % 32)==0  )continue;
 
 		let rgba=rand([125,225,75,255],50);
-		pb.setRGB(x,y,rgba);
+		main.pb.setRGB(x,y,rgba);
 	};//x++
 };//y++
 
@@ -262,16 +175,17 @@ imageData.data[i+3]=255;
 };
 //*/
 
-  pb.ctx.putImageData(imageData,0,0);
+  //main.pb.ctx.putImageData(imageData,0,0);
 console.log('E');
 
 
 //?	
 w=32;h=32;
-pb.ctx.drawImage(png,x0,y0,w,h);
+main.pb.ctx.drawImage(png,x0,y0,w,h);
 
 
 
+main.pb.put();
 
 
 };//func click
@@ -285,21 +199,21 @@ document.querySelector('button').onclick=click;
 
 
 
-pb2.applMap(50,40,cm);
+//pb2.applMap(50,40,cm);
 
-pb2.applMap(150,40,cm);
-
-
+//pb2.applMap(150,40,cm);
 
 
 
 
-pb2.ctx.putImageData(pb2.imageData,0,0);
+
+
+main.pb2.put();//pb2.ctx.putImageData(pb2.imageData,0,0);
 //pb2.init('#game-field canvas.up');
 
 
-console.log('pb2.imageData');
-console.log(pb2.imageData);
+//console.log('pb2.imageData');
+//console.log(main.pb2.imageData);
 
 
 
@@ -318,7 +232,7 @@ cmMan.copyFrom(pbTmp.dataImage,32*3,32*5);
 
 */
 
-var timer1 = setInterval(run, 125);
+//var timer1 = setInterval(run, 125);
 
 
 
@@ -332,7 +246,8 @@ let mans = document.querySelectorAll('#units .unit-man');
 //7% 125ms
 for(let y=0; y<400; y+=605){
 	for(let x=0; x<900; x+=288){
-		pb.ctx.drawImage(imgMan,x,y);
+		//main.pb.ctx.drawImage(imgMan,x,y);
+		main.pb.applImage(imgMan,{x:x,y:y,w:0,h:0});
 	};//x++
 };//y++
 
