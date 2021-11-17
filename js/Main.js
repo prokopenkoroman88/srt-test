@@ -243,6 +243,26 @@ this.imgMan.src = 'images/units/man.bmp';
 
 	}//init
 
+	onRectDown(){
+
+
+
+	}
+
+	onRectMove(){
+
+
+
+	}
+
+	onRectUp(){
+
+
+
+	}
+
+
+
 
 
 	resize(height,width){

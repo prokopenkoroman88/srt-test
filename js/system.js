@@ -13,6 +13,11 @@ const aWindRose=//aArrow
 ,{x:-1,y:-1}
 ];
 
+const aPointSect=
+[[7,0,1]
+,[6,8,2]
+,[5,4,3]
+]
 
-
+export { aWindRose, aPointSect };
 

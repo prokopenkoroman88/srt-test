@@ -152,8 +152,107 @@ $
 
 
 ------------------------------------
+8.11.21
 
 
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   index.html
+        modified:   js/canvas/CustomCanvas.js
+        modified:   js/canvas/RealCanvas.js
+        modified:   js/script.js
+        modified:   js/system.js
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        js/Main.js
+        js/canvas/PixelColor.js
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git add .
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   index.html
+        new file:   js/Main.js
+        modified:   js/canvas/CustomCanvas.js
+        new file:   js/canvas/PixelColor.js
+        modified:   js/canvas/RealCanvas.js
+        modified:   js/script.js
+        modified:   js/system.js
+
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git commit -m "PixelColor {r,g,b,a} Main - contains all elements"
+[master 47235f2] PixelColor {r,g,b,a} Main - contains all elements
+ 7 files changed, 514 insertions(+), 125 deletions(-)
+ create mode 100644 js/Main.js
+ create mode 100644 js/canvas/PixelColor.js
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git push -u origin master
+Enumerating objects: 19, done.
+Counting objects: 100% (19/19), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (11/11), done.
+Writing objects: 100% (11/11), 4.37 KiB | 1.46 MiB/s, done.
+Total 11 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To https://github.com/prokopenkoroman88/srt-test.git
+   9bbe080..47235f2  master -> master
+Branch 'master' set up to track remote branch 'master' from 'origin'.
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$
+
+
+-----------------------------------
+17.11.21
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git remote -v
+origin  https://github.com/prokopenkoroman88/srt-test.git (fetch)
+origin  https://github.com/prokopenkoroman88/srt-test.git (push)
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   index.html
+        modified:   js/Main.js
+        modified:   js/canvas/CustomCanvas.js
+        modified:   js/system.js
+        modified:   srt-readme.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        js/pict-script.js
+        pages/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git add .
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git commit -m "+pict-editor & Bezier"
 
 
 

@@ -1,3 +1,4 @@
+import {aWindRose, aPointSect} from './../system.js';
 import PixelColor from './PixelColor.js';
 
 export default class CustomCanvas {
@@ -45,8 +46,27 @@ export default class CustomCanvas {
 		this.width=width;
 	}
 
+	pointSect(x,y){
+		if (x<0) x=-1;
+		else 
+			if (x>=this.width) x=1;
+			else
+				x=0;
+
+		if (y<0) y=-1;
+		else 
+			if (y>=this.height) y=1;
+			else
+				y=0;
+
+		return aPointSect[y+1,x+1];
+		//aWindRose
+	}
 
 	setRGB(x,y,rgba){
+		x=Math.round(x);
+		y=Math.round(y);
+		//if (this.pointSect(x,y)!=8) return;
 		let i = (y*this.width+x) * 4;
 		//this.imageData.data.splice(i, 4, rgba);
 		for(let j=0; j<4; j++)
@@ -56,6 +76,9 @@ export default class CustomCanvas {
 	}
 
 	getRGB(x,y){
+		x=Math.round(x);
+		y=Math.round(y);
+		//if (this.pointSect(x,y)!=8) return [0,0,0,0];
 		let rgba=[];
 		let i = (y*this.width+x) * 4;
 		//this.imageData.data.splice(i, 4, rgba);
