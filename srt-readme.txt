@@ -256,8 +256,172 @@ $ git commit -m "+pict-editor & Bezier"
 
 
 
+-------------------------------------------------------
+4.12.21
 
 
+R(t) = (1-t)^3*P0 + 3*t*(1-t)^2*P1 + 3*t^2*(1-t)*P2 + t^3*P3
+
+
+
+R(t) = (1-t)^3*P0 + 3*t*(1-t)^2*P1 + 3*t^2*(1-t)*P2 + t^3*P3
+
+
+(1-t)^3 = 1 -3*t + 3*t^2 - t^3
+
+(1-t)^2 = 1 + t^2 -2*t
+
+
+
+R(t) = P0 -3*P0*t + 3*P0*t^2 - P0*t^3
+
++ 3*P1*t +  3*P1*t^3  -6*P1*t^2
+
++ 3*P2*t^2 - 3*P2*t^3
+
++ t^3*P3
+
+
+R(t) =
+
+ - P0*t^3 +  3*P1*t^3 - 3*P2*t^3  + P3*t^3
+
++ 3*P0*t^2  -6*P1*t^2  + 3*P2*t^2 
+
+-3*P0*t + 3*P1*t  
+
++ P0 
+
+
+
+------------
+
+
+ (P3 - 3*P2 + 3*P1 - P0)*t^3
+
++(3*P2 - 6*P1 + 3*P0)*t^2 
+
++(3*P1 - 3*P0)*t  
+
++ P0 - (cX|cY)
+
+= 0
+
+t in [0..1]
+
+
+
+
+https://www.mathros.net.ua/kryvi-bezje.html
+
+
+
+
+https://naurok.com.ua/kubichni-rivnyannya-metod-kardano-metod-vieta-89259.html
+
+
+---------------------------------
+15.12.21
+
+
+
+
+D:\STEP\PHP\OSPanel\domains\srt-test\js\canvas\BezierFigure.js
+
+class BezierCanvas extends RealCanvas{
+
+	static cnv=null;
+
+	init(selector){
+		super.init(selector);
+		this.canvas.addEventListener('mousemove', function(event){
+			BezierCanvas.cnv.onMouse(event,0);
+		});
+		this.canvas.addEventListener('mousedown', function(event){
+			BezierCanvas.cnv.onMouse(event,1);
+		});
+		this.canvas.addEventListener('mouseup', function(event){
+			BezierCanvas.cnv.onMouse(event,2);
+		});
+
+		this.iter=0;
+		this.args=[{},{},{}];
+	}
+
+	onMouse(event,kak){
+		console.log('kak'+kak);
+		console.log(event);
+
+
+		let x=event.offsetX;
+		let y=event.offsetY;
+		console.log(x,y);
+
+
+		if(kak==1){
+			this.args[this.iter]={x:x,y:y};
+			this.iter = (this.iter+1)%3;
+
+			if(this.iter==0){
+			    this.ctx.bezierCurveTo(this.args[0].x, this.args[0].y,  this.args[1].x, this.args[1].y,   this.args[2].x, this.args[2].y  );
+
+  
+	this.ctx.fillStyle='rgb(255,255,0)';
+	this.ctx.fill();
+
+      // line color
+    this.ctx.strokeStyle = 'red';
+    this.ctx.stroke();
+
+
+	this.refreshImageData();
+
+			};
+		};
+
+
+	}
+...
+}
+
+
+D:\STEP\PHP\OSPanel\domains\srt-test\js\pict-script.js
+
+let cnv1 = new BezierCanvas('#cnv1');
+BezierCanvas.cnv=cnv1;
+
+
+
+
+this.canvas.ctx.bezierCurveTo(this.args[0].x, this.args[0].y,  this.args[1].x, this.args[1].y,   this.args[2].x, this.args[2].y  );
+
+
+-------------------------------------------------------
+16.12.21
+
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   js/pict-script.js
+        modified:   pages/pict-editor.html
+        modified:   srt-readme.txt
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        js/BezierEditor.js
+        js/canvas/BezierFigure.js
+        js/common/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$
 
 
 

@@ -1,13 +1,15 @@
 import ColorMap from './canvas/VirtualCanvas.js';
 import Canvas from './canvas/RealCanvas.js';
 import PixelColor from './canvas/PixelColor.js';
+import { BezierPoint, BezierCurve, BezierFigure, BezierCanvas } from './canvas/BezierFigure.js';
+import BezierEditor from './BezierEditor.js';
 
 
+let editor = new BezierEditor('#top-panel','#cnv1');
 
+let cnv1 = editor.canvas;
 
-let cnv1 = new Canvas('#cnv1');
-
-const imgPath = '/images/wenn20219628.jpg';
+const imgPath = '/images/km/wenn20219628.jpg';
 
 
 
@@ -22,6 +24,60 @@ document.body.append(imgMan);
 imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 
+if(true){
+
+	var iter=0;
+	//?///var aBezierArgs
+
+
+	cnv1.resize(800,1200);//h,w
+	cnv1.ctx.strokeRect(0,0,1200,800);
+	//cnv1.ctx.strokeRect(20,10,100,200);
+
+/*
+//https://www.html5canvastutorials.com/tutorials/html5-canvas-bezier-curves/
+    cnv1.ctx.beginPath();
+    cnv1.ctx.moveTo(188, 130);
+    cnv1.ctx.bezierCurveTo(140, 10, 388, 10, 388, 170);
+    cnv1.ctx.lineWidth = 10;//before stroke
+
+    cnv1.ctx.bezierCurveTo(388, 160, 408, 180, 398, 180);
+    cnv1.ctx.lineWidth = 5;//before stroke
+
+
+
+    //cnv1.ctx.closePath();
+//https://www.html5canvastutorials.com/tutorials/html5-canvas-shape-fill/
+//https://www.html5canvastutorials.com/advanced/html5-canvas-animation-stage/
+
+	cnv1.ctx.fillStyle='rgb(255,0,255)';
+	cnv1.ctx.fill();
+
+      // line color
+    cnv1.ctx.strokeStyle = 'black';
+    cnv1.ctx.stroke();
+
+
+
+
+	cnv1.refreshImageData();
+/*
+	cnv1.canvas.addEventListener('click', function(event){
+		console.log(event);
+		let x=event.offsetX;
+		let y=event.offsetY;
+		console.log(x,y);
+
+		iter = (iter+1)%3;
+
+
+	});
+*/
+
+
+
+}
+else{
 imgMan.src = imgPath;
 
 		imgMan.addEventListener('load', function(){
@@ -50,6 +106,7 @@ imgMan.src = imgPath;
 			//document.body.remove(imgMan);
 			imgMan.remove();
 		});
+};
 
 
 
@@ -316,6 +373,7 @@ bezier_cubic([
 
 
 
+/*
 function bezier(aDot){
 
 
@@ -358,6 +416,7 @@ function bezier(aDot){
 
 	//cnv1.put();
 };
+*/
 
 
 
