@@ -6,7 +6,7 @@ export default class PixelColor {
 	constructor(color){
 
 		if(Array.isArray(color)){
-			if(color.length in [3,4] ){
+			if(color.length == 3 || color.length == 4 ){
 				this.r=color[0];
 				this.g=color[1];
 				this.b=color[2];
@@ -44,7 +44,7 @@ export default class PixelColor {
 		this.g=PixelColor.normByte(g);
 		this.b=PixelColor.normByte(b);
 		this.a=PixelColor.normByte(a);
-		console.log(this);
+		//console.log(this);
 		return this;
 	}
 
@@ -52,6 +52,63 @@ export default class PixelColor {
 
 	toArray(){
 		return [this.r, this.g, this.b, this.a];
+	}
+
+	static calcAverage(rgba){//[0..255]
+		return (rgba[0]+rgba[1]+rgba[2])/3;
+	}
+
+	static calcBrightness(rgba){//[0..255]
+		return PixelColor.calcAverage(rgba);
+	}
+
+	static calcContrast(rgba){//[0..255]
+		return (
+		Math.abs(rgba[0]-rgba[1])+
+		Math.abs(rgba[1]-rgba[2])+
+		Math.abs(rgba[2]-rgba[0])) /2;
+	}
+
+	static calcHue(rgba){//[0..1529]
+		function calc(_,L,C,R)
+		{
+			if (C==L) return (_+0)*255;
+			if (L==R) return (_+1)*255;
+			if (C==R) return (_+2)*255;
+
+			if (L>R) return (_+1)*255 +   Math.round((R-L)/(C-R)*255);
+			if (R>L) return (_+1)*255 +   Math.round((R-L)/(C-L)*255);
+		};
+		let r=rgba[0], g=rgba[1], b=rgba[2];
+		let hue;
+
+		if((r<=g)&&(g>=b)) hue=calc(1,r,g,b); //r<=g g>=b
+		if((g<=b)&&(b>=r)) hue=calc(3,g,b,r); //g<=b b>=r
+		if((b<=r)&&(r>=g)) hue=calc(5,b,r,g); //b<=r r>=g
+
+		return hue % 1530;
+	}
+
+	getBrightness(){//Яркость [0..1] снизу вверх
+		return ColorPixel.calcBrightness(this.toArray())/255;
+	}
+
+	getContrast(){//Контраст [0..1] от центральной оси к поверхности шара 
+		return ColorPixel.calcContrast(this.toArray())/255;
+	}
+
+	getHue(){//Оттенок [0..2*PI] по кругу все цвета радуги
+		return ColorPixel.calcHue(this.toArray())/1529*2*Math.PI;
+	}
+
+	getColorCoords(){
+		let radius = this.getContrast();
+		return {
+			x:Math.sin(this.getHue())*radius, 
+			y:Math.cos(this.getHue())*radius, 
+			z:this.getBrightness()*2-1
+		};
+		//x:[-1..1], y:[-1..1], z:[-1..1]
 	}
 
 }
