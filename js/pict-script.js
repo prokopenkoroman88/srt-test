@@ -1,8 +1,9 @@
 import ColorMap from './canvas/VirtualCanvas.js';
 import Canvas from './canvas/RealCanvas.js';
 import PixelColor from './canvas/PixelColor.js';
-import { BezierPoint, BezierCurve, BezierFigure, BezierCanvas } from './canvas/BezierFigure.js';
+import { Point, Spline, BezierPoint, BezierCurve, BezierFigure, BezierCanvas } from './canvas/BezierFigure.js';
 import BezierEditor from './BezierEditor.js';
+import { JPGAnalyzer } from './cogn/JPG-Analyzer.js';
 
 
 let editor = new BezierEditor('#top-panel','#cnv1');
@@ -24,7 +25,7 @@ document.body.append(imgMan);
 imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 
-if(true){
+if(!true){
 
 	var iter=0;
 	//?///var aBezierArgs
@@ -112,6 +113,7 @@ imgMan.src = imgPath;
 
 
 
+/*
 function isOne(rgba1,rgba2){
 	for(let i=0;i<4;i++)
 		if(rgba1[i]!=rgba2[i]) return false;
@@ -126,11 +128,22 @@ function grad(rgba1,rgba2,coef){
 		res[z] =   Math.round(rgba1[z] + (rgba2[z]  - rgba1[z])*coef);
 	return res;
 };
+*/
 
 
 
 function show(){
 
+let jpgAnalyzer = new JPGAnalyzer('#cnv1');
+jpgAnalyzer.initRect();
+//jpgAnalyzer.plavno();
+//jpgAnalyzer.vawes();
+//jpgAnalyzer.byEpicenters();
+//jpgAnalyzer.by3Colors();
+jpgAnalyzer.byClasters();
+jpgAnalyzer.put();
+
+/*
 let rgba;
 
 let
@@ -310,10 +323,12 @@ for(let j=0; j<w; j++)
 
 //Main.self.manMap
 //cnv1.refreshImageData();
+*/
 
 
 
 
+/*
 let cx=148,cy=50,cw=215,ch=50;
 bezier([
 	{x:cx-cw/2,y:cy},
@@ -348,7 +363,7 @@ bezier([
 
 
 
-cy+=3;cx-=1; cw-=1.5
+//cy+=3;cx-=1; cw-=1.5
 /*bezier_cubic([
 	{x:1,y:0-0},
 	{x:2,y:16-0},
@@ -356,7 +371,7 @@ cy+=3;cx-=1; cw-=1.5
 	{x:19,y:19-0},
 	]);
 */
-bezier_cubic([
+/*bezier_cubic([
 	{x:0,y:0-0},
 	{x:1,y:90-0},
 	{x:91,y:90-0},
@@ -364,6 +379,7 @@ bezier_cubic([
 	]);
 
 	cnv1.put();
+*/
 
 
 
@@ -483,7 +499,7 @@ x0*coef - x1*coef2+x0*coef2   -   x1*coef2 - x2*coef3+x1*coef3+x0*coef2 + x1*coe
 -123
 =0
 */
-
+/*
 //http://www.sopromat.info/cubic-equations-online-048.html
 //https://naurok.com.ua/kubichni-rivnyannya-metod-kardano-metod-vieta-89259.html
 
@@ -573,7 +589,7 @@ console.log('   iterx='+iterx, x);
 
 
 };
-
+*/
 
 
 
