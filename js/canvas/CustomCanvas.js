@@ -92,8 +92,8 @@ export default class CustomCanvas {
 	}
 
 	getPixel(x,y){
-		let rgba=getRGB(x,y);
-		return new ColorPixel(rgba);
+		let rgba=this.getRGB(x,y);
+		return new PixelColor(rgba);
 	}
 
 

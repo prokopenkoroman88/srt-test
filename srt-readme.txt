@@ -424,15 +424,50 @@ no changes added to commit (use "git add" and/or "git commit -a")
 $
 
 
+----------------------
+24.2.22
+
+срочно коммитил JPG-Analyzer
+
+----------------------
+9.3.22
+
+PixelVector.calc()
+
+вычмсление степени принадлежности
+ mu_Equal	ровной плоскости
+ mu_Grad	градиента
 
 
 
 
 
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
 
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   css/style.css
+        modified:   js/canvas/CustomCanvas.js
+        modified:   js/canvas/PixelColor.js
+        modified:   js/cogn/ColorArea.js
+        modified:   js/cogn/JPG-Analyzer.js
+        modified:   js/cogn/PixelVector.js
+        modified:   js/pict-script.js
+        modified:   pages/pict-editor.html
+        modified:   srt-readme.txt
 
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        js/cogn/ColorBorder.js
 
+no changes added to commit (use "git add" and/or "git commit -a")
 
+Роман@User-PC MINGW64 /d/STEP/PHP/OSPanel/domains/srt-test (master)
+$
 
 
 

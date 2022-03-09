@@ -6,7 +6,7 @@ import PixelColor from './../canvas/PixelColor.js';
 
 export default class ColorArea extends AreaTree{
 	owner=null;
-	child:[];
+	child=[];
 	//kind:ca_None;
 	constructor(rgba){
 		super();

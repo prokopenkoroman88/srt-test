@@ -108,6 +108,20 @@ html, body{
 
 
 
+#top-panel .lupa{
+	position:fixed;
+	top:100px;
+	right:100px;
+}
+
+#top-panel .lupa table{
+	border-collapse: collapse;
+}
+
+#top-panel .lupa td{
+	width: 75px;
+	height: 75px
+}
 
 
 

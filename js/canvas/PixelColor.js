@@ -90,15 +90,15 @@ export default class PixelColor {
 	}
 
 	getBrightness(){//Яркость [0..1] снизу вверх
-		return ColorPixel.calcBrightness(this.toArray())/255;
+		return PixelColor.calcBrightness(this.toArray())/255;
 	}
 
 	getContrast(){//Контраст [0..1] от центральной оси к поверхности шара 
-		return ColorPixel.calcContrast(this.toArray())/255;
+		return PixelColor.calcContrast(this.toArray())/255;
 	}
 
 	getHue(){//Оттенок [0..2*PI] по кругу все цвета радуги
-		return ColorPixel.calcHue(this.toArray())/1529*2*Math.PI;
+		return PixelColor.calcHue(this.toArray())/1529*2*Math.PI;
 	}
 
 	getColorCoords(){

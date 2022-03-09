@@ -1,9 +1,11 @@
+import Tag from './../common/tag-editor.js';
 import CustomCanvas from './../canvas/CustomCanvas.js';
 import VirtualCanvas from './../canvas/VirtualCanvas.js';
 import RealCanvas from './../canvas/RealCanvas.js';
 
 import PixelColor from './../canvas/PixelColor.js';
 import PixelGradient from './../canvas/PixelGradient.js';
+import { PixelVector } from './PixelVector.js';
 
 import AreaTree from './../canvas/AreaTree.js';
 import ColorArea from './ColorArea.js';
@@ -96,6 +98,237 @@ class JPGAnalyzer extends RealCanvas{
 
 */
 
+	}
+
+	buildControlPanel(panelSelector){//'#top-panel'
+		let topPanel = document.querySelector(panelSelector);
+		this.root = new Tag(this,topPanel);
+		this.initPanel();
+		this.controlVector = new PixelVector(this);
+	}
+
+	initPanel(){
+
+		let arr = new Array(5);
+		for(let i=0; i<5; i++)
+		{
+			arr[i] = new Array(5);
+			for(let j=0; j<5; j++)
+				arr[i][j]='';//i+','+j;
+		};
+
+		JPGAnalyzer.analyzer = this;
+
+		this.root
+		.div('btns')
+		  .dn()
+		  	.div('lupa')//.attr('style','  ')
+		  	  .dn()
+		  		.table().assignTo('tblLupa')
+		  		  .dn()
+		  			.trtd('','',arr)
+		  		  .up()
+		  	  .up()
+		  	.button('').inner('atan2').assignTo('btnAtan2')
+		  	.button('').inner('8x8').assignTo('btn8x8')
+		  	.button('').inner('mu').assignTo('btnMu')
+//			.button('').inner('Arrow').assignTo('btnArrow')
+//			.button('').inner('AddLayer').assignTo('btnAddLayer')
+//			.button('').inner('AddPoint').assignTo('btnAddPoint')
+//			.input('').attr('type','color').assignTo('inpFill')
+//			.button('').inner('Fill').assignTo('btnFill')
+		  .up();
+/*
+		this.btnArrow.currHTMLTag.addEventListener('click', function(){
+			console.log('editor.mode ?');
+			console.log('editor.mode ', BezierEditor.editor.mode);
+			BezierEditor.editor.mode=modeArrow;
+			console.log('editor.mode ', BezierEditor.editor.mode);
+		});
+*/
+		this.btnAtan2.currHTMLTag.addEventListener('click', function(){
+			//
+			for(let y=-5; y<=5; y++)
+				for(let x=-5; x<=5; x++)
+					console.log('y='+y+' x='+x+' atan= '+Math.atan2(y, x)/Math.PI +' Пи');
+		});
+
+
+		this.btn8x8.currHTMLTag.addEventListener('click', function(){
+			let this1 = JPGAnalyzer.analyzer;
+
+			let rgbaCntrl, rgbaAlter, rgbaCurr, rgbaLine;
+			let bMeandr; let iClr;
+
+			for(let iCell=0; iCell<this1.height/8; iCell++){
+				if(iCell%10==0)console.log(iCell*8);
+				for(let jCell=0; jCell<this1.width/8; jCell++){
+
+					iClr=0;
+					for(let i=1; i<7; i++){
+						for(let j=1; j<7; j++){
+							rgbaCurr = this1.getRGB(jCell*8+j,iCell*8+i);
+							if(iClr==0){
+								rgbaLine=rgbaCurr;
+								iClr=1
+							}
+							else
+							if(iClr==1){
+								if(!this1.isOne(rgbaCurr,rgbaLine))
+									iClr=3;
+							};
+							if(iClr==3)	break;
+						};
+						if(iClr==3)	break;
+					};
+
+					if(iClr==1){
+						for(let i=0; i<8; i++){
+							this1.setRGB(jCell*8+0,iCell*8+i,rgbaLine);
+							this1.setRGB(jCell*8+7,iCell*8+i,rgbaLine);
+						};
+						for(let j=1; j<7; j++){
+							this1.setRGB(jCell*8+j,iCell*8+0,rgbaLine);
+							this1.setRGB(jCell*8+j,iCell*8+7,rgbaLine);
+						};
+					};
+
+/*
+					//top:
+					rgbaCntrl = this1.getRGB(jCell*8+0,iCell*8+0);
+					rgbaAlter = this1.getRGB(jCell*8+1,iCell*8+0);
+					bMeandr = !this1.isOne(rgbaCntrl,rgbaAlter);
+					for(let j=2; j<8; j++){
+						if(!bMeandr)break;
+						rgbaCurr = this1.getRGB(jCell*8+j,iCell*8+0);
+						bMeandr = bMeandr && this1.isOne(rgbaCurr, j%2==0?rgbaCntrl:rgbaAlter);
+						//
+					};//j
+
+					if(bMeandr){
+						iClr=0;
+						for(let j=0; j<8; j++){
+							rgbaCurr = this1.getRGB(jCell*8+j,iCell*8+1);
+							if(iClr==0){
+								rgbaLine=rgbaCurr;
+								if(this1.isOne(rgbaCurr, rgbaCntrl))
+									iClr=1;
+								else
+								if(this1.isOne(rgbaCurr, rgbaAlter))
+									iClr=2;
+								else
+									iClr=3;
+							}//iClr==0
+							else
+							if(iClr==1||iClr==2){
+								if(!this1.isOne(rgbaCurr, rgbaLine))
+									iClr=3;
+							};//iClr==1,2
+							if(iClr==3)break;
+						};//j
+						if(iClr<3){
+							for(let j=0; j<8; j++){
+								this1.setRGB(jCell*8+j,iCell*8+0,rgbaLine);
+							};
+						};
+					};//bMeandr
+
+//========================
+					//bottom:
+					rgbaCntrl = this1.getRGB(jCell*8+0,iCell*8+7);
+					rgbaAlter = this1.getRGB(jCell*8+1,iCell*8+7);
+					bMeandr = !this1.isOne(rgbaCntrl,rgbaAlter);
+					for(let j=2; j<8; j++){
+						if(!bMeandr)break;
+						rgbaCurr = this1.getRGB(jCell*8+j,iCell*8+7);
+						bMeandr = bMeandr && this1.isOne(rgbaCurr, j%2==0?rgbaCntrl:rgbaAlter);
+						//
+					};//j
+
+					if(bMeandr){
+						iClr=0;
+						for(let j=0; j<8; j++){
+							rgbaCurr = this1.getRGB(jCell*8+j,iCell*8+6);
+							if(iClr==0){
+								rgbaLine=rgbaCurr;
+								if(this1.isOne(rgbaCurr, rgbaCntrl))
+									iClr=1;
+								else
+								if(this1.isOne(rgbaCurr, rgbaAlter))
+									iClr=2;
+								else
+									iClr=3;
+							}//iClr==0
+							else
+							if(iClr==1||iClr==2){
+								if(!this1.isOne(rgbaCurr, rgbaLine))
+									iClr=3;
+							};//iClr==1,2
+							if(iClr==3)break;
+						};//j
+						if(iClr<3){
+							for(let j=0; j<8; j++){
+								this1.setRGB(jCell*8+j,iCell*8+7,rgbaLine);
+							};
+						};
+					};//bMeandr
+*/
+
+
+
+
+
+				};//jCell
+			};//iCell
+			this1.put();
+		});
+
+		this.btnMu.currHTMLTag.addEventListener('click', function(){
+
+			let this1 = JPGAnalyzer.analyzer;
+			let pixelVector = new PixelVector(this1);
+
+
+
+
+			for(let i=0; i<this1.height; i++){
+
+				let a=[];
+				let rgba2=[0,0,0,0];
+				
+				if(i%10==0)console.log(i);
+				pixelVector.init(Math.round(this1.width/3)-1/*this1.x1-1*/,this1.y1+i);
+
+				for(let j=0; j<this1.width/3; j++){
+					pixelVector.nextStep();
+					pixelVector.calc();
+
+					rgba2 = pixelVector.getRGB(0,0);
+					let grd=pixelVector.mu_Grad;
+					if(!grd)grd=0;
+					let equ=pixelVector.mu_Equal;
+					if(!equ)equ=0;
+
+
+					/*if(equ==1 && grd==0){
+						rgba2[0]=255;
+						rgba2[1]=255;
+						rgba2[2]=255;
+					}
+					else*/
+					{
+						rgba2[0] = Math.round(grd*250);
+						rgba2[1] = Math.round(equ*250);
+						rgba2[2] = 0;
+					};
+					//console.log(i,j,rgba2);
+					this1.setRGB(this1.x1+j, this1.y1+i, rgba2);
+
+				};//j
+			};//i
+			this1.put();
+
+		});
 	}
 
 	isOne(rgba1,rgba2){
@@ -523,6 +756,7 @@ class JPGAnalyzer extends RealCanvas{
 
 
 		let aColorAreas=[], aReadyAreas=[];
+		let aColorBorders=[];
 
 
 		//какие цвета окружают с 8-ми сторон текущую точку [j,i]
@@ -564,7 +798,7 @@ class JPGAnalyzer extends RealCanvas{
 */
 
 				iClr=0;
-				rgba = pixelVector.a9Pxl[1][1].toArray();//rgba = this.getRGB(this.x0+j, this.y0+i);
+				rgba = pixelVector.getRGB(0,0);//a9Pxl[1][1].toArray();//rgba = this.getRGB(this.x0+j, this.y0+i);
 
 				pixelVector.calc();//??????
 
@@ -614,6 +848,7 @@ class JPGAnalyzer extends RealCanvas{
 		console.log('2aReadyAreas.length='+aReadyAreas.length);//16000 46000
 
 		let cArea=aReadyAreas.length;
+/*
 		for(let iArea=cArea-1; iArea>=0; iArea--){
 			//
 
@@ -622,12 +857,51 @@ class JPGAnalyzer extends RealCanvas{
 		};
 		console.log('3aReadyAreas.length='+aReadyAreas.length);//250 400
 		console.log(aReadyAreas);
+*/
 
 
 
 
 	}//byClasters
 
+	showLupa(x,y){
+		//PixelVector:
+		this.controlVector.fill(x,y);//.init(x,y)
+		this.controlVector.calc();
+		let tbl = this.tblLupa.currHTMLTag;
+		let tds = tbl.querySelectorAll('td');
+		for(let i=0; i<5; i++){
+			for(let j=0; j<5; j++){
+				//
+				this.rgba=this.getRGB(x+j-2,y+i-2);
+				//console.log(x+j-2,y+i-2,this.rgba);
+				tds[i*5+j].style='background-color:rgb('+this.rgba[0]+','+this.rgba[1]+','+this.rgba[2]+'); color:rgb('+(255-this.rgba[0])+','+(255-this.rgba[1])+','+(255-this.rgba[2])+'); ';
+				//
+			};//j
+		};//i
+
+
+
+		const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
+
+		for(let i=0; i<8; i++){
+			//
+			let xx=2+aWindRose[i].dx;
+			let yy=2+aWindRose[i].dy;
+			
+			tds[yy*5+xx].innerHTML = 'ш'+Math.round(this.controlVector.angle[i].lat*100)/100 + '<br>д'+Math.round(this.controlVector.angle[i].long*100)/100 + '<br>r'+Math.round(this.controlVector.dist[i]*100)/100  ;
+		};//i++
+
+		let mu_Equal=this.controlVector.mu_Equal;
+		if(mu_Equal)
+			mu_Equal=Math.round(mu_Equal*100)/100;
+		let mu_Grad=this.controlVector.mu_Grad;
+		if(mu_Grad)
+			mu_Grad=Math.round(mu_Grad*100)/100;
+		tds[2*5+2].innerHTML = 'эк='+mu_Equal+'<br>гр='+mu_Grad;
+
+
+	}//showLupa
 
 
 };
