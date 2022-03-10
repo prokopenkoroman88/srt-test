@@ -23,6 +23,9 @@ const cControlPoint=1, cBeforePoint=2, cAfterPoint=3, cRotatePoint=4;
 
 
 */
+function distance(x0,y0,x1,y1){
+	return Math.sqrt(Math.pow(x1-x0,2) + Math.pow(y1-y0,2));
+}
 
 class Point {
 	constructor(x,y){
@@ -34,9 +37,11 @@ class Point {
 		this.y+=dy
 	}
 	distance(x,y){
-		return Math.sqrt(Math.pow(x-this.x,2) + Math.pow(y-this.y,2));
+		return distance(this.x, this.y, x, y);// Math.sqrt(Math.pow(x-this.x,2) + Math.pow(y-this.y,2));
 	}
-
+	isNear(x,y){
+		return (this.distance(x,y)<5);
+	}
 };
 
 
@@ -50,6 +55,22 @@ class Spline {
 
 	toArray(){
 		return [this.controlPoint[0],this.leverPoint[0],this.leverPoint[1],this.controlPoint[1]];
+	}
+	isNear(x,y){
+		let aDot = this.toArray();
+		let oldPoint, newPoint=aDot[0];
+		let c=0;
+		for(let i=1; i<aDot.length; i++)
+			c+=aDot[i-1].distance(aDot[i].x,aDot[i].y);
+		c=c/5;//4
+		//=Math.hypot(aDot);//
+		for(let i=1; i<=c; i++){
+			if(distance(newPoint.x, newPoint.y, x, y)<5)
+				return true;
+			oldPoint = newPoint;
+			newPoint = findInterimBezierPoint(aDot, i/c);
+		};///i++
+		return false;
 	}
 };
 
@@ -116,29 +137,7 @@ class BezierFigure extends BezierCurve{
 
 };
 
-
-class BezierCanvas extends RealCanvas{
-
-//	static cnv=null;
-
-	init(selector){
-		super.init(selector);
-		console.log('BezierCanvas.init('+selector+')');
-		console.log(this.canvas);
-		this.points = [];
-		this.splines = [];
-	}
-
-
-	findPointByCoords(x,y){
-		for(let i=0; i<this.points.length; i++){
-			if(this.points[i].distance(x,y)<5)
-				return i;
-		};
-		return -1;
-	}
-
-	findInterimBezierPoint(aDot, coef){//interim point
+function findInterimBezierPoint(aDot, coef){//interim point
 		function middle(dot1,dot2,coef){
 			return {
 				x: dot1.x + (dot2.x-dot1.x)*coef,
@@ -177,7 +176,38 @@ class BezierCanvas extends RealCanvas{
 		aPnt[0]=middle(aPnt[1], aPnt[2], coef);
 
 		return aPnt[0];
+}
+
+class BezierCanvas extends RealCanvas{
+
+//	static cnv=null;
+
+	init(selector){
+		super.init(selector);
+		console.log('BezierCanvas.init('+selector+')');
+		console.log(this.canvas);
+		this.points = [];
+		this.splines = [];
 	}
+
+
+	findPointByCoords(x,y){
+		for(let i=0; i<this.points.length; i++){
+			if(this.points[i].isNear(x,y))
+				return i;
+		};
+		return -1;
+	}
+
+	findSplineByCoords(x,y){
+		for(let i=0; i<this.splines.length; i++){
+			if(this.splines[i].isNear(x,y))
+				return i;
+		};
+		return -1;		
+	}
+
+
 
 	/*paintPoint(point,rgba){
 			let x=Math.round(point.x);
@@ -209,7 +239,7 @@ class BezierCanvas extends RealCanvas{
 		//=Math.hypot(aDot);//
 		for(let i=1; i<=c; i++){
 			oldPoint = newPoint;
-			newPoint = this.findInterimBezierPoint(aDot, i/c);
+			newPoint = findInterimBezierPoint(aDot, i/c);
 			//console.log(i );
 			paintPoint(newPoint);
 			//console.log(aPnt);
@@ -283,7 +313,7 @@ let qy = 2*ry*ry*ry/27 - ry*sy/3; // + t!!
 
 
 //for(let y=60; y<120; y++){
-for(let y=0; y<100; y++){
+for(let y=0; y<600; y++){
 
 	let dy=aDot[0].y-y;
 	let ty = dy/ay;
@@ -292,7 +322,7 @@ for(let y=0; y<100; y++){
 //	console.log('itery='+itery, ty, dy, ay);
 
 	//for(let x=30; x<570; x++){
-	for(let x=0; x<100; x++){
+	for(let x=0; x<1200; x++){
 
 		let dx=aDot[0].x-x;
 		let tx = dx/ax;
@@ -302,14 +332,14 @@ for(let y=0; y<100; y++){
 //console.log('   iterx='+iterx, x);
 //this.setRGB(Math.round(y/10+x) ,100+Math.round(iterx*100),[255,0,255,255]);
 //this.setRGB(Math.round(iterx*100) ,100+Math.round(itery*100),[255,0,255,255]);
-if(x=0){
+if(x==0){
 this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
 };
 
 
 
 		//console.log('iterx='+iterx);
-		if(Math.abs(iterx - itery)<31){
+		if(Math.abs(iterx - itery)<31*8){
 			//console.log('iterx='+iterx, x);
 			let rgb5=grad(this.getRGB(x,y), rgba , 1/Math.pow(Math.abs(iterx - itery)+1,4)  );
 			this.setRGB(x,y,rgb5);

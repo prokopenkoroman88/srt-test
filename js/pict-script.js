@@ -12,6 +12,8 @@ let jpgAnalyzer;
 let cnv1 = editor.canvas;
 
 const imgPath = '/images/km/wenn20219628.jpg';
+const pictModeJPG='JPG', pictModeBezier='Bezier';
+const pictMode = pictModeBezier;
 
 
 
@@ -26,7 +28,8 @@ document.body.append(imgMan);
 imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 
-if(!true){
+switch (pictMode) {
+case pictModeBezier:{
 
 	var iter=0;
 	//?///var aBezierArgs
@@ -78,8 +81,8 @@ if(!true){
 
 
 
-}
-else{
+}; break;
+case pictModeJPG:{
 imgMan.src = imgPath;
 
 		imgMan.addEventListener('load', function(){
@@ -134,8 +137,8 @@ jpgAnalyzer.buildControlPanel('#top-panel');
 
 
 		});
-};
-
+}; break;
+};//switch pictMode
 
 
 

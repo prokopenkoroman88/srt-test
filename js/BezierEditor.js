@@ -4,7 +4,7 @@ import PixelColor from './canvas/PixelColor.js';
 
 const mouseMv=0, mouseDn=1, mouseUp=2;
 const btnLeft=0, btnRight=2;//from https://developer.mozilla.org/ru/docs/Web/API/Element/mousedown_event
-const modeArrow=0, modeAddLayer=1, modeAddPoint=2;
+const modeArrow=0, modeAddLayer=1, modeAddFigure=2, modeAddCurve=3, modeAddPoint=4;
 
 export default class BezierEditor{
 
@@ -38,6 +38,8 @@ export default class BezierEditor{
 		  .dn()
 			.button('').inner('Arrow').assignTo('btnArrow')
 			.button('').inner('AddLayer').assignTo('btnAddLayer')
+			.button('').inner('AddFigure').assignTo('btnAddFigure')
+			.button('').inner('AddCurve').assignTo('btnAddCurve')
 			.button('').inner('AddPoint').assignTo('btnAddPoint')
 			.input('').attr('type','color').assignTo('inpFill')
 			.button('').inner('Fill').assignTo('btnFill')
@@ -55,9 +57,21 @@ export default class BezierEditor{
 			console.log('editor.mode ', BezierEditor.editor.mode);
 		});
 
+		this.btnAddFigure.currHTMLTag.addEventListener('click', function(){
+			BezierEditor.editor.mode=modeAddFigure;
+			BezierEditor.editor.iter=-1;
+			console.log('editor.mode ', BezierEditor.editor.mode);
+		});
+
+		this.btnAddCurve.currHTMLTag.addEventListener('click', function(){
+			BezierEditor.editor.mode=modeAddCurve;
+			BezierEditor.editor.iter=-1;
+			console.log('editor.mode ', BezierEditor.editor.mode);
+		});
+
 		this.btnAddPoint.currHTMLTag.addEventListener('click', function(){
 			BezierEditor.editor.mode=modeAddPoint;
-			BezierEditor.editor.iter=-1;
+			BezierEditor.editor.iter=0;//-1;
 			console.log('editor.mode ', BezierEditor.editor.mode);
 		});
 
@@ -79,6 +93,13 @@ export default class BezierEditor{
 		this.canvas.canvas.addEventListener('mouseup', function(event){
 			BezierEditor.editor.onMouse(event,mouseUp);
 		});
+	}
+
+	setMode(value){
+
+
+
+		this.mode = value;
 	}
 
 	addPoint(x,y){
@@ -116,8 +137,19 @@ export default class BezierEditor{
 				switch(kak){
 				case mouseDn:{
 					//
-					let iPoint;
-					iPoint = this.canvas.findPointByCoords(x,y);
+					let iPoint, iSpline;
+					if(this.currSpline){
+						if(this.currSpline.leverPoint[0].isNear(x,y))
+							this.currPoint = this.currSpline.leverPoint[0];
+						else
+						if(this.currSpline.leverPoint[1].isNear(x,y))
+							this.currPoint = this.currSpline.leverPoint[1];
+					};
+
+					if(/*!this.currSpline &&*/ !this.currPoint){
+						iPoint = this.canvas.findPointByCoords(x,y);
+						if(iPoint<0)
+							iSpline = this.canvas.findSplineByCoords(x,y);
 
 /*
 что мы находим?
@@ -144,21 +176,34 @@ layer objects:[]
 
 
 */
-					console.log('iPoint=',iPoint);
+					console.log('iPoint='+iPoint+', iSpline='+iSpline);
 
 					if(iPoint>=0)
 						this.currPoint = this.canvas.points[iPoint]
 					else
 						this.currPoint = null;
+					if(iSpline>=0)
+						this.currSpline = this.canvas.splines[iSpline]
+					else
+						this.currSpline = null;
+
+					};
+
 
 					if(this.currPoint){
 					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
-						this.canvas.ctx.beginPath();
-						this.canvas.ctx.arc(this.currPoint.x,this.currPoint.y, 5, 0, Math.PI*2, true);
-						this.canvas.ctx.stroke();
+						this.paintStandardCircle(this.currPoint.x, this.currPoint.y, 5);
 						this.refresh();
 					};
+					if(this.currSpline){
 
+//					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
+
+						this.paintStandardCircle(this.currSpline.leverPoint[0].x, this.currSpline.leverPoint[0].y, 5);
+						this.paintStandardCircle(this.currSpline.leverPoint[1].x, this.currSpline.leverPoint[1].y, 5);
+						this.refresh();
+
+					};
 
 
 
@@ -173,7 +218,7 @@ layer objects:[]
 						//fill by white?
 						this.refresh();
 
-						//this.currPoint=null;
+						this.currPoint=null;//?
 					};
 
 
@@ -187,42 +232,41 @@ layer objects:[]
 			{
 
 			}; break;
+			case modeAddFigure:
+			{
+				if(kak==mouseDn){
+					//????????????
+				};
+			}; break;
+			case modeAddCurve:
+			{
+				if(kak==mouseDn){
+					this.addPoint(x,y);
+					this.startStandardCurve(x,y);
+
+					this.iter = 0;
+					this.mode = modeAddPoint;
+				};
+			}; break;
 			case modeAddPoint:
 			{
 
-		if(kak==mouseDn){
+				if(kak==mouseDn){
 
-			if(this.iter==-1){
-				this.addPoint(x,y);
-				this.canvas.ctx.beginPath();
-				this.canvas.ctx.moveTo(x, y);
-
-				this.iter = 0;
-			}
-			else
-			{
 				this.args[this.iter]={x:x,y:y};
 				this.iter = (this.iter+1)%3;
 
 				if(this.iter==0){
 					this.addSpline(this.args);
-					this.canvas.ctx.bezierCurveTo(this.args[0].x, this.args[0].y,  this.args[1].x, this.args[1].y,   this.args[2].x, this.args[2].y  );
-
-					//закрашивать надо в конце
-					//this.canvas.ctx.fillStyle='rgb(255,255,0)';
-					//this.canvas.ctx.fill();
-
-					// line color
-					this.canvas.ctx.strokeStyle = 'red';
-					this.canvas.ctx.stroke();
+					this.paintStandardCurve(this.args, 'red');
 
 
 					this.refresh();
 					this.paintSpline(this.currSpline);
 
 				};
-			};
-		};
+
+				};
 
 			}; break;
 			default:
@@ -238,12 +282,57 @@ layer objects:[]
 		console.log(spline);
 		let aDot=spline.toArray();
 		let clr =  new PixelColor('#22ffee');
-		this.canvas.paintBezier3(aDot,clr);
+		//?//this.canvas.paintBezier3(aDot,clr);
 		this.canvas.paintBezier(aDot,clr);
 		this.canvas.put();
 	}
 
+	startStandardCurve(x,y){
+		this.canvas.ctx.beginPath();
+		this.canvas.ctx.moveTo(x, y);		
+	}
+
+	paintStandardCurve(args, lineColor='black'){
+		this.canvas.ctx.bezierCurveTo(args[0].x, args[0].y,  args[1].x, args[1].y,   args[2].x, args[2].y  );
+
+		//закрашивать надо в конце
+		//this.canvas.ctx.fillStyle='rgb(255,255,0)';
+		//this.canvas.ctx.fill();
+
+		// line color
+		this.canvas.ctx.strokeStyle = lineColor;//'red'
+		this.canvas.ctx.stroke();
+	}
+
+	paintStandardCircle(x,y,radius){
+		this.canvas.ctx.beginPath();
+		this.canvas.ctx.arc(x,y, radius, 0, Math.PI*2, true);
+		this.canvas.ctx.stroke();
+	}
+
 	refresh(){
+		this.canvas.paintRect(0,0,this.canvas.width,this.canvas.height,[255,255,255,255]);
+		for(let i=0; i<this.canvas.splines.length; i++){
+			//
+			this.paintSpline(this.canvas.splines[i]);
+		};
+
+					if(this.currPoint){
+					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
+						this.paintStandardCircle(this.currPoint.x, this.currPoint.y, 5);
+						//this.refresh();
+					};
+					if(this.currSpline){
+
+//					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
+
+						this.paintStandardCircle(this.currSpline.leverPoint[0].x, this.currSpline.leverPoint[0].y, 5);
+						this.paintStandardCircle(this.currSpline.leverPoint[1].x, this.currSpline.leverPoint[1].y, 5);
+						//this.refresh();
+
+					};
+
+
 		//this.canvas.put();
 		this.canvas.refreshImageData();
 	}
