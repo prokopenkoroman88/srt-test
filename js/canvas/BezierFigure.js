@@ -44,20 +44,63 @@ class Point {
 	}
 };
 
+class Rotor extends Point {
+	constructor(x,y,angle=0){
+		super(x,y);
+		this.angle = angle;
+		this.points = [];
+	}
+	rotate(dangle){
+		if(dangle==0) return;
+		for(let i=0; i<this.points.length; i++){
+			let rad = this.points[i].distance(x,y);
+			let angle = Math.atan2(this.points[i].y-y, this.points[i].x-x);
+			angle+=dangle;
+			//m.b. cos i sin perestavit'?
+			this.points[i].y = y+Math.sin(angle)*rad;
+			this.points[i].x = x+Math.cos(angle)*rad;
+		};//i
+		this.angle+=dangle;
+	}
+}
 
 class Spline {
 	constructor(points){
-		this.controlPoint=points;//point0,point1
+		this.controlPointIds=points;//point0,point1
 		this.leverPoint=[];
 		this.width = 1;
 		this.color = '#000';
 	}
 
+	findFigure(){
+		let layers = BezierCanvas.cnv.layers;
+		console.log(layers);
+		for(let i=0; i<layers.length; i++){
+			let figures = layers[i].figures;
+			for(let j=0; j<figures.length; j++){
+				if (figures[j].splines.indexOf(this)>=0){
+					return figures[j];
+				};
+			};//j
+		};//i
+	}
+	get controlPoint(){
+		let arr=[];
+		for(let i=0; i<this.controlPointIds.length; i++)
+			arr.push(this.ownFigure.points[ this.controlPointIds[i] ]);
+		return arr;
+	}
 	toArray(){
 		return [this.controlPoint[0],this.leverPoint[0],this.leverPoint[1],this.controlPoint[1]];
 	}
-	isNear(x,y){
+	isNear(x,y,ownFigure=null){
+		if(!ownFigure)
+			ownFigure=this.findFigure();
+		this.ownFigure = ownFigure;
+		console.log('ownFigure=');
+		console.log(this.ownFigure);
 		let aDot = this.toArray();
+		delete this.ownFigure;
 		let oldPoint, newPoint=aDot[0];
 		let c=0;
 		for(let i=1; i<aDot.length; i++)
@@ -125,17 +168,87 @@ class BezierPoint {
 class BezierCurve{
 
 	constructor(){
-		this.points=[];
+		this.splineIds=[];
 		
 	}
 
 };
 
-class BezierFigure extends BezierCurve{
+class BezierFigure{// extends BezierCurve
 
+	constructor(name=''){
+		this.name=name;
+		//this.rect = {x,y,w:0,h:0};
+		this.points = [];//Point
+		this.rotors = [];//Rotor
+		this.splines = [];//Spline
+		this.curves = [];//BezierCurve
+		this.figures = [];//BezierFigure (and imported)
+	}
 
-
+	findByCoords(arrName,x,y){
+		arrName+='s';
+		for(let i=0; i<this[arrName].length; i++){
+			if(this[arrName][i].isNear(x,y,this)){
+				console.log('Figure.'+arrName+' = '+i);
+				return i;
+			};
+		};
+		return -1;		
+	}
+	findPointByCoords(x,y){
+		return this.findByCoords('point',x,y);
+/*
+		for(let i=0; i<this.points.length; i++){
+			if(this.points[i].isNear(x,y))
+				return i;
+		};
+		return -1;
+*/
+	}
+	findRotorByCoords(x,y){
+		return this.findByCoords('rotor',x,y);
+/*
+		for(let i=0; i<this.rotors.length; i++){
+			if(this.rotors[i].isNear(x,y))
+				return i;
+		};
+		return -1;
+*/
+	}
+	findSplineByCoords(x,y){
+		return this.findByCoords('spline',x,y);
+/*
+		for(let i=0; i<this.splines.length; i++){
+			if(this.splines[i].isNear(x,y))
+				return i;
+		};
+		return -1;		
+*/
+	}
 };
+
+class BezierLayer{
+	constructor(){
+		this.figures = [];//BezierFigure (and imported)
+	}
+	findByCoords(arrName,x,y){
+		for(let i=0; i<this.figures.length; i++){
+			let id = this.figures[i].findByCoords(arrName,x,y);
+			if(id>=0){
+				let res={figure:i};
+				res[arrName] = id;
+				console.log(res);
+				return res;
+				//return {figure:i, arrName:id};
+			};
+		};//
+				let res={figure:-1};
+				res[arrName] = -1;
+				return res;
+		//return {figure:-1, arrName:-1};
+	}
+}
 
 function findInterimBezierPoint(aDot, coef){//interim point
 		function middle(dot1,dot2,coef){
@@ -144,53 +257,57 @@ function findInterimBezierPoint(aDot, coef){//interim point
 				y: dot1.y + (dot2.y-dot1.y)*coef,
 			};
 		};
-/*		//let aPnt=[{x,y},{x,y},{x,y}, {x,y},{x,y}, {x,y}];
-		let aPnt=[{},{},{}, {},{}, {}];
 
-		aPnt[0]=middle(aDot[0], aDot[1], i/c);
-		aPnt[1]=middle(aDot[1], aDot[2], i/c);
-		aPnt[2]=middle(aDot[2], aDot[3], i/c);
-
-
-		aPnt[3]=middle(aPnt[0], aPnt[1], i/c);
-		aPnt[4]=middle(aPnt[1], aPnt[2], i/c);
-		
-		aPnt[5]=middle(aPnt[3], aPnt[4], i/c);
-
-		return aPnt[5];
-*/
-
+/*
 		let aPnt=[{}, {},{}, {},{},{}, {},{},{},{}];
-		aPnt[6]=aDot[0];
-		aPnt[7]=aDot[1];
-		aPnt[8]=aDot[2];
 		aPnt[9]=aDot[3];
+		aPnt[8]=aDot[2];
+		aPnt[7]=aDot[1];
+		aPnt[6]=aDot[0];
 
-		aPnt[3]=middle(aPnt[6], aPnt[7], coef);
-		aPnt[4]=middle(aPnt[7], aPnt[8], coef);
 		aPnt[5]=middle(aPnt[8], aPnt[9], coef);
+		aPnt[4]=middle(aPnt[7], aPnt[8], coef);
+		aPnt[3]=middle(aPnt[6], aPnt[7], coef);
 
-		aPnt[1]=middle(aPnt[3], aPnt[4], coef);
 		aPnt[2]=middle(aPnt[4], aPnt[5], coef);
-		
+		aPnt[1]=middle(aPnt[3], aPnt[4], coef);
+
 		aPnt[0]=middle(aPnt[1], aPnt[2], coef);
+//wrapped code:*/
+		let n=aDot.length;
+		let i2=(n*n+n)/2;//10 6 3 1
+		let i1=i2-n;//6 3 1 0
+		let aPnt = new Array(i2);
+		for(let i=0; i<n; i++)
+			aPnt[i1+i]=aDot[i];
+		for(let lvl=n-1; lvl>0; lvl--){//степень
+			for(let j=lvl; j>0; j--){//точки
+				i1--;
+				aPnt[i1]=middle(aPnt[i1+lvl], aPnt[i1+lvl+1], coef);
+			};
+		};
 
 		return aPnt[0];
 }
 
 class BezierCanvas extends RealCanvas{
 
-//	static cnv=null;
+	static cnv=null;
 
 	init(selector){
 		super.init(selector);
 		console.log('BezierCanvas.init('+selector+')');
 		console.log(this.canvas);
-		this.points = [];
-		this.splines = [];
+		//this.points = [];
+		//this.splines = [];
+		this.content = {
+			layers : [],
+		};
+		BezierCanvas.cnv = this;
 	}
 
 
+/*
 	findPointByCoords(x,y){
 		for(let i=0; i<this.points.length; i++){
 			if(this.points[i].isNear(x,y))
@@ -206,8 +323,23 @@ class BezierCanvas extends RealCanvas{
 		};
 		return -1;		
 	}
+*/
 
-
+	findByCoords(arrName,x,y){
+		for(let i=0; i<this.content.layers.length; i++){
+			let res = this.content.layers[i].findByCoords(arrName,x,y);
+			if(res[arrName]>=0){
+				res.layer=i;
+				console.log(res);
+				return res;
+				//return {layer:i, figure:res.figure, ''''+arrName+'''':res[arrName]};
+			};
+		};//
+				let res={layer:-1, figure:-1};
+				res[arrName] = -1;
+				return res;
+		//return {layer:-1, figure:-1, ''''+arrName+'''':-1};
+	}
 
 	/*paintPoint(point,rgba){
 			let x=Math.round(point.x);
@@ -364,6 +496,6 @@ this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
 };
 
 
-export { Point, Spline, BezierPoint, BezierCurve, BezierFigure, BezierCanvas };
+export { Point, Spline, BezierPoint, BezierCurve, BezierFigure, BezierLayer, BezierCanvas };
 
 
