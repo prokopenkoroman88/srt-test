@@ -49,6 +49,7 @@ export default class BezierEditor{
 			.input('').attr('type','color').assignTo('inpFill')
 			.button('').inner('Fill').assignTo('btnFill')
 			.button('').inner('SAVE').assignTo('btnSave')
+			.button('').inner('LOAD').assignTo('btnLoad')
 		  .up()
 		.div('bezier-list')
 		  .dn()
@@ -98,6 +99,72 @@ export default class BezierEditor{
 		this.btnSave.currHTMLTag.addEventListener('click', function(){
 			new JSONLoader(BezierEditor.editor.canvas.content).saveToFile('data-'+(Date.now())+'.json');
 		});
+
+		this.btnLoad.currHTMLTag.addEventListener('click', function(){
+			//BezierEditor.editor.canvas.content = new JSONLoader().loadFromFile('data-1647263973432.json').obj;
+			let jsonLoader = new JSONLoader().loadFromFile('./../saved/data-1647263973432.json');//from pages\pict-editor.html
+			let int1=setInterval(function(){
+				if(!jsonLoader.loaded)return;
+				console.log(JSONLoader.loader.obj);
+				//BezierEditor.editor.canvas.content = jsonLoader.obj;
+				BezierEditor.editor.loadContent(JSONLoader.loader.obj);
+				BezierEditor.editor.refresh();
+				clearInterval(int1);
+			}, 100);
+		});
+	}
+
+	loadContent(obj){//obj = JSON.parse()
+		BezierEditor.editor.canvas.content.layers = [];
+
+		let layers1 = BezierEditor.editor.canvas.content.layers;
+		let layers = obj.layers;
+		for(let iLayer=0; iLayer<layers.length; iLayer++){
+			this.addLayer();
+			layers1.push(this.currLayer);
+
+			let figures = layers[iLayer].figures;
+			let figures1= layers1[iLayer].figures;
+			for(let iFigure=0; iFigure<figures.length; iFigure++){
+				this.addFigure();
+				figures1.push(this.currFigure);
+
+				let points = figures[iFigure].points;
+				let points1= figures1[iFigure].points;
+				for(let iPoint=0; iPoint<points.length; iPoint++){
+					this.currPoint = new Point(points[iPoint].x, points[iPoint].y);
+					points1.push(this.currPoint);
+				};
+
+				let rotors = figures[iFigure].rotors;
+				let rotors1= figures1[iFigure].rotors;
+				for(let iRotor=0; iRotor<rotors.length; iRotor++){
+					this.currRotor = new Rotor(rotors[iRotor].x, rotors[iRotor].y, rotors[iRotor].angle);
+					rotors1.push(this.currRotor);
+				};
+
+				let splines = figures[iFigure].splines;
+				let splines1= figures1[iFigure].splines;
+				for(let iSpline=0; iSpline<splines.length; iSpline++){
+					this.currSpline = new Spline(splines[iSpline].controlPointIds);
+					this.currSpline.leverPoint.push(new Point(splines[iSpline].leverPoint[0].x, splines[iSpline].leverPoint[0].y));
+					this.currSpline.leverPoint.push(new Point(splines[iSpline].leverPoint[1].x, splines[iSpline].leverPoint[1].y));
+					this.currSpline.color = splines[iSpline].color;
+					this.currSpline.width = splines[iSpline].width;
+					splines1.push(this.currSpline);
+				};
+
+				let curves = figures[iFigure].curves;
+				let curves1= figures1[iFigure].curves;
+				for(let iCurve=0; iCurve<curves.length; iCurve++){
+					this.currCurve = new BezierCurve();
+					this.currCurve.splineIds = curves[iCurve].splineIds;
+					curves1.push(this.currCurve);
+				};
+
+			};
+		};
+
 	}
 
 	initCanvas(){
@@ -184,11 +251,38 @@ export default class BezierEditor{
 		let newPoint = this.addPoint(args[2].x, args[2].y);
 
 		this.currSpline = new Spline([this.currFigure.points.indexOf(oldPoint), this.currFigure.points.indexOf(newPoint)]);//newPoint==this.currPoint
-		this.currFigure.splines.push(this.currSpline);//canvas
+		let iSpline = this.currFigure.splines.push(this.currSpline)-1;//canvas
+		if(this.currCurve)
+			this.currCurve.splineIds.push(iSpline);
 
 		this.currSpline.leverPoint.push( new Point(args[0].x, args[0].y) );//after
 		this.currSpline.leverPoint.push( new Point(args[1].x, args[1].y) );//before
 		return this.currSpline;
+	}
+
+	addCurve(){
+		this.currCurve = new BezierCurve();
+		if(!this.currFigure){
+			if(!this.currLayer)
+				this.currLayer = this.canvas.content.layers[0];
+			this.currFigure = this.currLayer.figures[0];
+		};
+		this.currFigure.curves.push(this.currCurve);
+		return this.currCurve;
+	}
+
+	addFigure(){
+		this.currFigure = new BezierFigure();
+		if(!this.currLayer)
+			this.currLayer = this.canvas.content.layers[0];
+		this.currLayer.figures.push(this.currFigure);
+		return this.currFigure;
+	}
+
+	addLayer(){
+		this.currLayer = new BezierLayer();
+		this.canvas.content.layers.push(this.currLayer);
+		return this.currLayer;
 	}
 
 	onMouse(event,kak){
@@ -208,78 +302,6 @@ export default class BezierEditor{
 				switch(kak){
 				case mouseDn:{
 					this.selectElement(x,y);
-/*
-					//
-					let iPoint, iSpline;
-					if(this.currSpline){
-						if(this.currSpline.leverPoint[0].isNear(x,y))
-							this.currPoint = this.currSpline.leverPoint[0];
-						else
-						if(this.currSpline.leverPoint[1].isNear(x,y))
-							this.currPoint = this.currSpline.leverPoint[1];
-					};
-
-					if( !this.currPoint){
-						iPoint = this.canvas.findPointByCoords(x,y);
-						if(iPoint<0)
-							iSpline = this.canvas.findSplineByCoords(x,y);
-*/
-
-/*
-что мы находим?
-
-controlPoint        repaint 1,2 Spline by controlPoint
-leverPoint          repaint 1 Spline by leverPoint
-
-
-
-points
-
-splines
-
-curves/figures
-
-
-
-
-figure splines:[]  points:[]
-object figures:[] objects?:[]
-layer objects:[]
-
-
-
-
-*/
-/*
-					console.log('iPoint='+iPoint+', iSpline='+iSpline);
-
-					if(iPoint>=0)
-						this.currPoint = this.canvas.points[iPoint]
-					else
-						this.currPoint = null;
-					if(iSpline>=0)
-						this.currSpline = this.canvas.splines[iSpline]
-					else
-						this.currSpline = null;
-
-					};
-
-
-					if(this.currPoint){
-					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
-						this.paintStandardCircle(this.currPoint.x, this.currPoint.y, 5);
-						this.refresh();
-					};
-					if(this.currSpline){
-
-//					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
-
-						this.paintStandardCircle(this.currSpline.leverPoint[0].x, this.currSpline.leverPoint[0].y, 5);
-						this.paintStandardCircle(this.currSpline.leverPoint[1].x, this.currSpline.leverPoint[1].y, 5);
-						this.refresh();
-
-					};
-*/
 
 
 
@@ -317,8 +339,9 @@ layer objects:[]
 			case modeAddCurve:
 			{
 				if(kak==mouseDn){
+					this.addCurve();
 					this.addPoint(x,y);
-					this.startStandardCurve(x,y);
+					//this.startStandardCurve({x:x,y:y});
 
 					this.iter = 0;
 					this.mode = modeAddPoint;
@@ -334,11 +357,11 @@ layer objects:[]
 
 				if(this.iter==0){
 					this.addSpline(this.args);
-					this.paintStandardCurve(this.args, 'red');
+					//this.paintStandardCurve(this.args, 'red');
 
 
 					this.refresh();
-					this.paintSpline(this.currSpline, this.currFigure);
+					//this.paintSpline(this.currSpline, this.currFigure);
 
 				};
 
@@ -419,8 +442,8 @@ layer objects:[]
 
 	paintSpline(spline, figure){
 		//
-		console.log('spline=');
-		console.log(spline);
+		//console.log('spline=');
+		//console.log(spline);
 		spline.ownFigure = figure;
 		let aDot=spline.toArray();
 		delete spline.ownFigure;
@@ -430,9 +453,19 @@ layer objects:[]
 		this.canvas.put();
 	}
 
-	startStandardCurve(x,y){
+	paintStandardLine(p0, p1, lineColor='black'){
 		this.canvas.ctx.beginPath();
-		this.canvas.ctx.moveTo(x, y);		
+		this.canvas.ctx.moveTo(p0.x, p0.y);
+		this.canvas.ctx.lineTo(p1.x, p1.y);
+		let _strokeStyle=this.canvas.ctx.strokeStyle;
+		this.canvas.ctx.strokeStyle = lineColor;
+		this.canvas.ctx.stroke();
+		this.canvas.ctx.strokeStyle=_strokeStyle;
+	}
+
+	startStandardCurve(p){
+		this.canvas.ctx.beginPath();
+		this.canvas.ctx.moveTo(p.x, p.y);		
 	}
 
 	paintStandardCurve(args, lineColor='black'){
@@ -447,9 +480,9 @@ layer objects:[]
 		this.canvas.ctx.stroke();
 	}
 
-	paintStandardCircle(x,y,radius){
+	paintStandardCircle(p,radius){
 		this.canvas.ctx.beginPath();
-		this.canvas.ctx.arc(x,y, radius, 0, Math.PI*2, true);
+		this.canvas.ctx.arc(p.x,p.y, radius, 0, Math.PI*2, true);
 		this.canvas.ctx.stroke();
 	}
 
@@ -468,18 +501,27 @@ layer objects:[]
 
 					if(this.currPoint){
 					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
-						this.paintStandardCircle(this.currPoint.x, this.currPoint.y, 5);
+						this.paintStandardCircle(this.currPoint, 5);
 						//this.refresh();
 					};
-					if(this.currSpline){
+		if(this.currSpline){
 
 //					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
+			if(this.currFigure){
+				let controlPoint = new Array(2);
+				controlPoint[0] = this.currFigure.points[ this.currSpline.controlPointIds[0] ];
+				controlPoint[1] = this.currFigure.points[ this.currSpline.controlPointIds[1] ];
+				this.paintStandardCircle(controlPoint[0], 5);
+				this.paintStandardCircle(controlPoint[1], 5);
+				this.paintStandardLine(controlPoint[0], this.currSpline.leverPoint[0], 'blue');
+				this.paintStandardLine(controlPoint[1], this.currSpline.leverPoint[1], 'blue');
+			};
 
-						this.paintStandardCircle(this.currSpline.leverPoint[0].x, this.currSpline.leverPoint[0].y, 5);
-						this.paintStandardCircle(this.currSpline.leverPoint[1].x, this.currSpline.leverPoint[1].y, 5);
+						this.paintStandardCircle(this.currSpline.leverPoint[0], 5);
+						this.paintStandardCircle(this.currSpline.leverPoint[1], 5);
 						//this.refresh();
 
-					};
+		};
 
 
 		//this.canvas.put();

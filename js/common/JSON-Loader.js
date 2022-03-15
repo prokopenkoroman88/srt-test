@@ -1,6 +1,9 @@
 export default class JSONLoader {
 
+	static loader=null;
+
 	constructor(obj){
+		JSONLoader.loader=this;
 		if(obj)
 			this.objToStr(obj);
 	}
@@ -22,6 +25,21 @@ export default class JSONLoader {
 		return this;
 	}
 
+	loadFromFile(filename = "data.json"){
+		const xmlhttp = new XMLHttpRequest();
+		this.loaded=false;
+		xmlhttp.onload = function() {
+			//console.log(this.responseText);
+			JSONLoader.loader.str = this.responseText;
+			JSONLoader.loader.obj = JSON.parse(JSONLoader.loader.str);
+			//console.log(JSONLoader.loader.obj);
+			JSONLoader.loader.loaded=true;
+		};
+		xmlhttp.open("GET", filename);//"json_demo.txt"
+		xmlhttp.send();
+		//console.log(this.obj);
+		return this;
+	}
 
 /*
 			var fs = require('fs');

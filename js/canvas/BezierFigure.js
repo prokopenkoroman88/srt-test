@@ -171,7 +171,9 @@ class BezierCurve{
 		this.splineIds=[];
 		
 	}
-
+	isNear(x,y,ownFigure){
+		//
+	}
 };
 
 class BezierFigure{// extends BezierCurve
@@ -186,45 +188,27 @@ class BezierFigure{// extends BezierCurve
 		this.figures = [];//BezierFigure (and imported)
 	}
 
-	findByCoords(arrName,x,y){
-		arrName+='s';
+	findByCoords(attrName,x,y){
+		let arrName=attrName+'s';
+		let res={};
 		for(let i=0; i<this[arrName].length; i++){
 			if(this[arrName][i].isNear(x,y,this)){
 				console.log('Figure.'+arrName+' = '+i);
-				return i;
+				res[attrName]=i;
+				return res;//i;
 			};
 		};
-		return -1;		
+		res[attrName]=-1;
+		return res;//-1;		
 	}
 	findPointByCoords(x,y){
 		return this.findByCoords('point',x,y);
-/*
-		for(let i=0; i<this.points.length; i++){
-			if(this.points[i].isNear(x,y))
-				return i;
-		};
-		return -1;
-*/
 	}
 	findRotorByCoords(x,y){
 		return this.findByCoords('rotor',x,y);
-/*
-		for(let i=0; i<this.rotors.length; i++){
-			if(this.rotors[i].isNear(x,y))
-				return i;
-		};
-		return -1;
-*/
 	}
 	findSplineByCoords(x,y){
 		return this.findByCoords('spline',x,y);
-/*
-		for(let i=0; i<this.splines.length; i++){
-			if(this.splines[i].isNear(x,y))
-				return i;
-		};
-		return -1;		
-*/
 	}
 };
 
@@ -232,21 +216,21 @@ class BezierLayer{
 	constructor(){
 		this.figures = [];//BezierFigure (and imported)
 	}
-	findByCoords(arrName,x,y){
+	findByCoords(attrName,x,y){
 		for(let i=0; i<this.figures.length; i++){
-			let id = this.figures[i].findByCoords(arrName,x,y);
-			if(id>=0){
-				let res={figure:i};
-				res[arrName] = id;
+			let res = this.figures[i].findByCoords(attrName,x,y);
+			if(res[attrName]>=0){
+				//let res={figure:i};
+				//res[attrName] = id;
+				res.figure=i;
 				console.log(res);
 				return res;
-				//return {figure:i, arrName:id};
 			};
 		};//
-				let res={figure:-1};
-				res[arrName] = -1;
+				let res={};//{figure:-1};
+				res[attrName] = -1;
+				res.figure=-1;
 				return res;
-		//return {figure:-1, arrName:-1};
 	}
 }
 
@@ -325,20 +309,20 @@ class BezierCanvas extends RealCanvas{
 	}
 */
 
-	findByCoords(arrName,x,y){
+	findByCoords(attrName,x,y){
 		for(let i=0; i<this.content.layers.length; i++){
-			let res = this.content.layers[i].findByCoords(arrName,x,y);
-			if(res[arrName]>=0){
+			let res = this.content.layers[i].findByCoords(attrName,x,y);
+			if(res[attrName]>=0){
 				res.layer=i;
 				console.log(res);
 				return res;
-				//return {layer:i, figure:res.figure, ''''+arrName+'''':res[arrName]};
 			};
 		};//
-				let res={layer:-1, figure:-1};
-				res[arrName] = -1;
+				let res={};//{layer:-1, figure:-1};
+				res[attrName] = -1;
+				res.figure=-1;
+				res.layer=-1;
 				return res;
-		//return {layer:-1, figure:-1, ''''+arrName+'''':-1};
 	}
 
 	/*paintPoint(point,rgba){
@@ -359,8 +343,8 @@ class BezierCanvas extends RealCanvas{
 
 		let rgba=color.toArray();//[128,255,224,255];
 
-		console.log('bezier ');
-		console.log(aDot);
+		//console.log('bezier ');
+		//console.log(aDot);
 
 
 		let oldPoint, newPoint=aDot[0];
