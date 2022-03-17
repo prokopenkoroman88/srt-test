@@ -48,23 +48,31 @@ class Rotor extends Point {
 	constructor(x,y,angle=0){
 		super(x,y);
 		this.angle = angle;
-		this.points = [];
+		this.pointIds = [];
+		this.rotorIds = [];//?
 	}
-	rotate(dangle){
+	rotate(dangle, ownFigure){
 		if(dangle==0) return;
-		for(let i=0; i<this.points.length; i++){
-			let rad = this.points[i].distance(x,y);
-			let angle = Math.atan2(this.points[i].y-y, this.points[i].x-x);
+		let points = new Array(this.pointIds.length);
+		for(let i=0; i<this.pointIds.length; i++){
+			points[i]=ownFigure.points[ this.pointIds[i] ];
+		};
+		console.log('points of rotor:');
+		console.log(this.pointIds);
+		console.log(points);
+		for(let i=0; i<points.length; i++){
+			let rad = points[i].distance(this.x,this.y);
+			let angle = Math.atan2(points[i].y-this.y, points[i].x-this.x)+Math.PI/2;
 			angle+=dangle;
-			//m.b. cos i sin perestavit'?
-			this.points[i].y = y+Math.sin(angle)*rad;
-			this.points[i].x = x+Math.cos(angle)*rad;
+			points[i].y = Math.round(this.y-Math.cos(angle)*rad*10)/10;
+			points[i].x = Math.round(this.x+Math.sin(angle)*rad*10)/10;
+			//how rotate levers around points?
 		};//i
 		this.angle+=dangle;
 	}
 }
 
-class Spline {
+class BezierSpline {
 	constructor(points){
 		this.controlPointIds=points;//point0,point1
 		this.leverPoint=[];
@@ -118,6 +126,7 @@ class Spline {
 };
 
 
+/*
 function createPoint(x,y){
 	return {x:x,y:y};
 };
@@ -162,6 +171,7 @@ class BezierPoint {
 
 
 };
+*/
 
 
 
@@ -220,8 +230,6 @@ class BezierLayer{
 		for(let i=0; i<this.figures.length; i++){
 			let res = this.figures[i].findByCoords(attrName,x,y);
 			if(res[attrName]>=0){
-				//let res={figure:i};
-				//res[attrName] = id;
 				res.figure=i;
 				console.log(res);
 				return res;
@@ -291,23 +299,6 @@ class BezierCanvas extends RealCanvas{
 	}
 
 
-/*
-	findPointByCoords(x,y){
-		for(let i=0; i<this.points.length; i++){
-			if(this.points[i].isNear(x,y))
-				return i;
-		};
-		return -1;
-	}
-
-	findSplineByCoords(x,y){
-		for(let i=0; i<this.splines.length; i++){
-			if(this.splines[i].isNear(x,y))
-				return i;
-		};
-		return -1;		
-	}
-*/
 
 	findByCoords(attrName,x,y){
 		for(let i=0; i<this.content.layers.length; i++){
@@ -349,7 +340,7 @@ class BezierCanvas extends RealCanvas{
 
 		let oldPoint, newPoint=aDot[0];
 		let c=0;
-		for(let i=1;i<=3;i++)
+		for(let i=1;i<aDot.length;i++)
 			c+=aDot[i-1].distance(aDot[i].x,aDot[i].y);
 		//c=c/2;//4
 		//=Math.hypot(aDot);//
@@ -480,6 +471,6 @@ this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
 };
 
 
-export { Point, Spline, BezierPoint, BezierCurve, BezierFigure, BezierLayer, BezierCanvas };
+export { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierLayer, BezierCanvas };
 
 

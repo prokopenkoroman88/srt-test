@@ -1,7 +1,7 @@
 import ColorMap from './canvas/VirtualCanvas.js';
 import Canvas from './canvas/RealCanvas.js';
 import PixelColor from './canvas/PixelColor.js';
-import { Point, Spline, BezierPoint, BezierCurve, BezierFigure, BezierCanvas } from './canvas/BezierFigure.js';
+import { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierCanvas } from './canvas/BezierFigure.js';
 import BezierEditor from './BezierEditor.js';
 import { JPGAnalyzer } from './cogn/JPG-Analyzer.js';
 
