@@ -111,7 +111,7 @@ export default class BezierEditor{
 
 		this.btnLoad.currHTMLTag.addEventListener('click', function(){
 			//BezierEditor.editor.canvas.content = new JSONLoader().loadFromFile('data-1647263973432.json').obj;
-			let jsonLoader = new JSONLoader().loadFromFile('./../saved/data-rotor.json');//1647263973432//from pages\pict-editor.html
+			let jsonLoader = new JSONLoader().loadFromFile('./../saved/data-net.json');//1647263973432//from pages\pict-editor.html
 			let int1=setInterval(function(){
 				if(!jsonLoader.loaded)return;
 				console.log(JSONLoader.loader.obj);
@@ -579,6 +579,7 @@ layer objects:[]
 				};
 			};
 		};
+		this.canvas.paintGrid(this.currFigure,30,30);//udali ot suda
 
 					if(this.currPoint){
 						this.paintStandardCircle(this.currPoint, 5);

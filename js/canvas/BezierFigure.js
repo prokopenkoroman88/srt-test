@@ -332,7 +332,7 @@ class BezierCanvas extends RealCanvas{
 		};
 
 
-		let rgba=color.toArray();//[128,255,224,255];
+		let rgba=Array.isArray(color)?color:color.toArray();//[128,255,224,255];
 
 		//console.log('bezier ');
 		//console.log(aDot);
@@ -341,7 +341,7 @@ class BezierCanvas extends RealCanvas{
 		let oldPoint, newPoint=aDot[0];
 		let c=0;
 		for(let i=1;i<aDot.length;i++)
-			c+=aDot[i-1].distance(aDot[i].x,aDot[i].y);
+			c+=distance(aDot[i-1].x,aDot[i-1].y,aDot[i].x,aDot[i].y);
 		//c=c/2;//4
 		//=Math.hypot(aDot);//
 		for(let i=1; i<=c; i++){
@@ -461,6 +461,121 @@ this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
 
 }
 
+	paintGrid(currFigure,h,w){
+/*
+	рисует решетку между четырьмя линиями curves
+	назначение линий:
+	0 верхняя
+	1 правая
+	2 нижняя
+	3 левая
+	Для пары вертикальных линий и пары горизонтальных линий:
+		кол-во сплайнов д.б. одинаково
+		направление сплайнов д.б. одинаково
+*/
+		const _Top=0, _Right=1, _Bottom=2, _Left=3;
+		if(!currFigure || currFigure.curves.length!=4)return;
+		let crv = currFigure.curves;
+		if(crv[_Top].splineIds.length != crv[_Bottom].splineIds.length || crv[_Right].splineIds.length != crv[_Left].splineIds.length)return;
+
+		let clr =  [50,50,50,255];//new PixelColor('#22ffee');
+		if(!h)h=10;
+		if(!w)w=10;
+
+		let iSpline=0, jSpline=0;
+		let aSplines = new Array(4);
+		let aDots = new Array(4);
+
+		function getSpline(_Side,num){
+			aSplines[_Side] = currFigure.splines[ crv[_Side].splineIds[num] ];
+			aSplines[_Side].ownFigure = currFigure;
+			aDots[_Side] = aSplines[_Side].toArray();
+			//return [spline, spline.toArray()];
+		};
+
+		getSpline(_Top,jSpline);
+		getSpline(_Bottom,jSpline);
+
+		getSpline(_Left,iSpline);
+		getSpline(_Right,iSpline);
+
+		let aDist = new Array(4);
+		for(let _Side=_Top; _Side<=_Left; _Side++) {
+			let ctrl = aSplines[_Side].controlPoint;
+			let dist = ctrl[0].distance(ctrl[1].x, ctrl[1].y);
+			if(dist==0)dist=1;
+			aDist[_Side]=dist;
+		};
+
+		let aDltLever = new Array(4);
+		for(let _Side=_Top; _Side<=_Left; _Side++) {
+			aDltLever[_Side] = new Array(2);
+			let ctrl = aSplines[_Side].controlPoint;
+			let lvr = aSplines[_Side].leverPoint;
+			aDltLever[_Side][0] = {dx:lvr[0].x-ctrl[0].x, dy:lvr[0].y-ctrl[0].y,};
+			aDltLever[_Side][1] = {dx:lvr[1].x-ctrl[1].x, dy:lvr[1].y-ctrl[1].y,};
+		};
+
+		//рисует h горизонтальных линий от верхней линии №0 до нижней линии №3
+				for(let i=0; i<=h; i++){
+					let aDot = new Array(4);
+
+					let p0 = findInterimBezierPoint(aDots[_Left], i/h);//p0=aPoints[_Left]
+					let p3 = findInterimBezierPoint(aDots[_Right], i/h);//p3=aPoints[_Right]
+
+					aDot[0] = {x:p0.x, y:p0.y,};
+					aDot[3] = {x:p3.x, y:p3.y,};
+
+					let wDist = distance(p0.x, p0.y, p3.x, p3.y);
+					let coefWide = wDist/aDist[_Top];
+
+					let dltTop = aDltLever[_Top];
+					let dltBottom = aDltLever[_Bottom];
+
+					aDot[1] ={};
+					aDot[1].x = p0.x+(dltTop[0].dx*(1-i/h)+dltBottom[0].dx*(i/h))*coefWide;
+					aDot[1].y = p0.y+(dltTop[0].dy*(1-i/h)+dltBottom[0].dy*(i/h))*coefWide;
+
+					aDot[2] ={};
+					aDot[2].x = p3.x+(dltTop[1].dx*(1-i/h)+dltBottom[1].dx*(i/h))*coefWide;
+					aDot[2].y = p3.y+(dltTop[1].dy*(1-i/h)+dltBottom[1].dy*(i/h))*coefWide;
+
+					this.paintBezier(aDot,clr);
+				};
+
+		//рисует w вертикальных линий от левой линии №3 до правой линии №1
+				for(let j=0; j<=w; j++){
+					let aDot = new Array(4);
+
+					let p0 = findInterimBezierPoint(aDots[_Top], j/w);//p0=aPoints[_Left]
+					let p3 = findInterimBezierPoint(aDots[_Bottom], j/w);//p3=aPoints[_Right]
+
+					aDot[0] = {x:p0.x, y:p0.y,};
+					aDot[3] = {x:p3.x, y:p3.y,};
+
+					let wDist = distance(p0.x, p0.y, p3.x, p3.y);
+					let coefWide = wDist/aDist[_Left];
+
+					let dltTop = aDltLever[_Left];
+					let dltBottom = aDltLever[_Right];
+
+					aDot[1] ={};
+					aDot[1].x = p0.x+(dltTop[0].dx*(1-j/w)+dltBottom[0].dx*(j/w))*coefWide;
+					aDot[1].y = p0.y+(dltTop[0].dy*(1-j/w)+dltBottom[0].dy*(j/w))*coefWide;
+
+					aDot[2] ={};
+					aDot[2].x = p3.x+(dltTop[1].dx*(1-j/w)+dltBottom[1].dx*(j/w))*coefWide;
+					aDot[2].y = p3.y+(dltTop[1].dy*(1-j/w)+dltBottom[1].dy*(j/w))*coefWide;
+
+					this.paintBezier(aDot,clr);
+				};
+
+		aSplines.forEach( function(spline, _Side) {
+			delete spline.ownFigure;//нужно для устранения циклических ссылок перед выгрузкой в JSON
+		});
+
+		this.put();
+	}
 
 
 
