@@ -417,7 +417,83 @@ let py = (3*sy-ry*ry)/3;
 let qy = 2*ry*ry*ry/27 - ry*sy/3; // + t!!
 
 
+console.log('aDot=');
+console.log(aDot);
+console.log(ax,bx,cx,rx,sx,px,qx);
+console.log(ay,by,cy,ry,sy,py,qy);
+//x^3 + r*x^2 + s*x + t = 0; //r=b/a s=c/a t=d/a
+//y = x+r/3 | x = y-r/3
+//y^3 + p*y + q = 0; // p = (3*s - r^2)/3, q = (2*r^3)/27 - r*s/3 + t
+function cardano(p,q){
+	let x = Math.pow( -q/2 - Math.pow(q*q/4 + p*p*p/27,1/2) ,1/3) + Math.pow( -q/2 + Math.pow(q*q/4 + p*p*p/27,1/2) ,1/3);
+	return x;
+}
 
+function gaussian(x, a=1, b=0, c=1){
+	return a*Math.exp(-((x-b)*(x-b))/(2*c*c));
+}
+
+function bezier_roots(a,b,c,d,val=1){
+//http://www.sopromat.info/catalog/view/javascript/048.js
+	function sqrt3(D){
+		return D>=0?Math.pow(D,1/3):-Math.pow(-D,1/3);
+	};
+
+	let koren1={},koren2={},koren3={},z_1,z_2;
+
+		let r=b/a,
+		    s=c/a,
+		    t=d/a,
+		    p=(3*s-Math.pow(r,2))/3,//-Math[sopr_0x1370('0x17')] = pow
+		    q=2/27*Math.pow(r,3)-r*s/3+t,
+		    D=Math.pow(p/3,3)+Math.pow(q/2,2);
+		    //console.log('D='+D);
+
+		//if(Math.abs(D)<1)//
+		if(D>-1e-10&&D<1e-10)
+			D=0;
+		else 
+			if(D>0xe8d4a51000||D<-0xe8d4a51000)
+				console.log('D is too large = '+D);
+
+		if(D>0){//рівняння має один дійсний корінь і два комплексні
+			z_1=sqrt3(-q/2+Math.pow(D,0.5));
+			z_2=sqrt3(-q/2-Math.pow(D,0.5));
+			koren1.real=(z_1+z_2-r/3)*val;//[sopr_0x1370('0x16')](_0x46f248);
+			koren2.real=(-r/3-(z_1+z_2)/2)*val;//[sopr_0x1370('0x16')](_0x46f248)+'+'+((z_1-z_2)/2*Math.pow(3,0.5))[sopr_0x1370('0x16')](_0x46f248)+'i';
+			koren3.real=(-r/3-(z_1+z_2)/2)*val;//[sopr_0x1370('0x16')](_0x46f248)+'-'+((z_1-z_2)/2*Math.pow(3,0.5))[sopr_0x1370('0x16')](_0x46f248)+'i';
+			koren2.im=((z_1-z_2)/2*Math.pow(3,0.5))*val;
+			koren3.im=((z_1-z_2)/2*Math.pow(3,0.5))*val;
+		}
+		else 
+			if(D===0){//всі корені рівняння є дійсними числами, при чому принаймні два з них є однаковими
+				z_1=sqrt3(-q/2);
+				koren1.real=(2*z_1-r/3)*val;//['numberToFixed'](_0x46f248);
+				koren2.real=(-r/3-z_1)*val;//[sopr_0x1370('0x16')](_0x46f248);
+				koren3.real=koren2.real;
+			}
+			else{//всі три корені рівняння є різними дійсними числами
+				let tmp1=p>=0?Math.pow((p)/3,0.5):-Math.pow((-p)/3,0.5);//Math[sopr_0x1370('0xb')]
+				let tmp2=(q/(2*Math.pow(tmp1,3)));//Math[sopr_0x1370('0xa')]
+				koren1.real=(-2*tmp1*(tmp2/3)-r/3)*val;//Math[sopr_0x1370('0x13')]//[sopr_0x1370('0x16')](_0x46f248);
+				koren2.real=(-2*tmp1*Math.cos(tmp2/3+2*Math.PI/3)-r/3)*val;//[sopr_0x1370('0x16')](_0x46f248);
+				koren3.real=(-2*tmp1*(tmp2/3+4*Math.PI/3)-r/3)*val;//Math[sopr_0x1370('0x13')]//[sopr_0x1370('0x16')](_0x46f248);
+			}
+
+	return [koren1,koren2,koren3];
+};
+
+let this1 = this;
+function paintInterim(coef,x,y,dx,dy){
+	if(coef<0 || coef>1)return;
+	let pnt;
+	pnt = findInterimBezierPoint(aDot,coef);
+	let clr = [55,255,55,255];
+	//this1.setRGB(Math.round(dx+pnt.x),Math.round(dy+pnt.y) ,[55,255,55,255]);
+	if(isNaN(x)){x=pnt.x; clr = [255,55,255,255] }
+	if(isNaN(y))y=pnt.y;
+	this1.setRGB(Math.round(dx+x),Math.round(dy+y) ,clr);
+};
 
 //for(let y=60; y<120; y++){
 for(let y=0; y<600; y++){
@@ -425,7 +501,18 @@ for(let y=0; y<600; y++){
 	let dy=aDot[0].y-y;
 	let ty = dy/ay;
 
-	let itery = discr(py,qy+ty);	
+	//let itery = discr(py,qy+ty);	
+	//let itery = cardano(py,qy+ty);//? - ry/3;
+	console.log('y='+y);
+	let korniy = bezier_roots(ay,by,cy,dy,1);
+
+
+	if(!korniy[0].im)paintInterim(korniy[0].real,NaN,y,10,0);
+	if(!korniy[1].im)paintInterim(korniy[1].real,NaN,y,10,0);
+	if(!korniy[2].im)paintInterim(korniy[2].real,NaN,y,10,0);
+
+
+	//console.log(korniy);
 //	console.log('itery='+itery, ty, dy, ay);
 
 	//for(let x=30; x<570; x++){
@@ -433,29 +520,107 @@ for(let y=0; y<600; y++){
 
 		let dx=aDot[0].x-x;
 		let tx = dx/ax;
-		let iterx = discr(px,qx+tx);
+		//let iterx = discr(px,qx+tx);
+		//let iterx = cardano(px,qx+tx);//? - rx/3;
+//?		let kornix = bezier_roots(ax,bx,cx,dx);
 
 
 //console.log('   iterx='+iterx, x);
 //this.setRGB(Math.round(y/10+x) ,100+Math.round(iterx*100),[255,0,255,255]);
 //this.setRGB(Math.round(iterx*100) ,100+Math.round(itery*100),[255,0,255,255]);
 if(x==0){
-this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
+//this.setRGB(Math.round(100+y) ,100+Math.round(itery*100),[255,0,255,255]);
+//this.setRGB(100+Math.round(korniy[0].real),Math.round(0+y) ,[255,0,255,255]);
+//this.setRGB(100+Math.round(korniy[1].real),Math.round(0+y) ,[255,0,255,255]);
+//this.setRGB(100+Math.round(korniy[2].real),Math.round(0+y) ,[255,0,255,255]);
+};
+if(y==100){
+//this.setRGB(100+Math.round(kornix[0].real),Math.round(100+x) ,[255,255,0,255]);
+//this.setRGB(100+Math.round(kornix[1].real),Math.round(100+x) ,[255,255,0,255]);
+//this.setRGB(100+Math.round(kornix[2].real),Math.round(100+x) ,[255,255,0,255]);
 };
 
 
 
 		//console.log('iterx='+iterx);
-		if(Math.abs(iterx - itery)<31*8){
+/*		//if(Math.abs(iterx - itery)<31*8){
 			//console.log('iterx='+iterx, x);
-			let rgb5=grad(this.getRGB(x,y), rgba , 1/Math.pow(Math.abs(iterx - itery)+1,4)  );
+			//let rgb5=grad(this.getRGB(x,y), rgba , 1/Math.pow(Math.abs(iterx - itery)+1,4)  );
+			let coef = gaussian(iterx - itery);
+			if(coef>1)coef=1;
+			//let rgb5=grad(this.getRGB(x,y), rgba , coef  );
+			let dlt = Math.abs(iterx);// - itery);
+			let rgb5 = new Array(4);
+			rgb5[0] = dlt & 255;
+			dlt = (dlt - rgb5[0])/256;
+			rgb5[1] = dlt & 255;
+			dlt = (dlt - rgb5[1])/256;
+			rgb5[2] = dlt & 255;
+			rgb5[3]=255;
 			this.setRGB(x,y,rgb5);
-		}
+		//}*/
 
+		let dlts=[];
+/*
+		dlts.push( Math.abs(kornix[0].real-y) );
+		dlts.push( Math.abs(kornix[1].real-y) );
+		dlts.push( Math.abs(kornix[2].real-y) );
+		dlts.push( Math.abs(korniy[0].real-x) );
+		dlts.push( Math.abs(korniy[1].real-x) );
+		dlts.push( Math.abs(korniy[2].real-x) );
+		dlts.sort(function(a,b){ return a-b; });
+		let rgb6=grad(this.getRGB(x,y), rgba , gaussian(dlts[0])  );
+		this.setRGB(x,y,rgb6);
+*/
+
+//x^3 + r*x^2 + s*x + t = 0; //r=b/a s=c/a t=d/a
+//let newY = ax*x*x*x + bx*x*x + cx*x + dx; //r=b/a s=c/a t=d/a
+//let newX = ay*y*y*y + by*y*y + cy*y + dy;
+//console.log(newY,newX);
+//let newY = x*x*x + rx*x*x + sx*x + ty; //r=b/a s=c/a t=d/a
+//let rgb7 = grad(this.getRGB(x,y), [0,55,255,255] , gaussian(Math.abs(newY-y) + Math.abs(newX-x)  ,2,0,10)  );
+
+//this.setRGB(Math.round(0+newX) ,0+Math.round(y),[200,100,150,255]);
+//this.setRGB(Math.round(0+x) ,0+Math.round(newY),[200,100,150,255]);
+
+/*
+			let dlt = Math.abs(newY-newX);//Math.abs(newY-y) + Math.abs(newX-x);
+			let rgb7 = new Array(4);
+			rgb7[0] = dlt & 255;
+			dlt = (dlt - rgb7[0])/256;
+			rgb7[1] = dlt & 255;
+			dlt = (dlt - rgb7[1])/256;
+			rgb7[2] = dlt & 255;
+			rgb7[3]=255;
+
+this.setRGB(Math.round(0+x) ,100+Math.round(y),rgb7);
+*/
 
 	};//x
 };//y
 
+for(let x=0; x<1200; x++){
+	let dx=aDot[0].x-x;
+	let tx = dx/ax;
+	let kornix = bezier_roots(ax,bx,cx,dx,1);
+
+//this.setRGB(Math.round(0+x) ,100+Math.round(kornix[0].real),[255,255,0,255]);
+//this.setRGB(Math.round(0+x) ,100+Math.round(kornix[1].real),[255,255,0,255]);
+//this.setRGB(Math.round(0+x) ,100+Math.round(kornix[2].real),[255,255,0,255]);
+
+/*
+	let pnt;
+	pnt = findInterimBezierPoint(aDot,kornix[0].real);
+	this.setRGB(0+Math.round(pnt.x),Math.round(10+pnt.y) ,[55,255,55,255]);
+	pnt = findInterimBezierPoint(aDot,kornix[1].real);
+	this.setRGB(0+Math.round(pnt.x),Math.round(10+pnt.y) ,[55,255,55,255]);
+	pnt = findInterimBezierPoint(aDot,kornix[2].real);
+	this.setRGB(0+Math.round(pnt.x),Math.round(10+pnt.y) ,[55,255,55,255]);
+*/
+	if(!kornix[0].im)paintInterim(kornix[0].real,x,NaN,0,10);
+	if(!kornix[1].im)paintInterim(kornix[1].real,x,NaN,0,10);
+	if(!kornix[2].im)paintInterim(kornix[2].real,x,NaN,0,10);
+};//x
 
 
 
