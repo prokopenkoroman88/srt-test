@@ -2,6 +2,7 @@ import Tag from './common/tag-editor.js';
 import { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierLayer, BezierCanvas } from './canvas/BezierFigure.js';
 import PixelColor from './canvas/PixelColor.js';
 import JSONLoader from './common/JSON-Loader.js';
+import TriangleFiller from './canvas/TriangleFiller.js';
 
 const mouseMv=0, mouseDn=1, mouseUp=2;
 const btnLeft=0, btnRight=2;//from https://developer.mozilla.org/ru/docs/Web/API/Element/mousedown_event
@@ -611,6 +612,9 @@ layer objects:[]
 
 		};
 
+		let tf = new TriangleFiller(this.canvas);
+		tf.testInit();
+		tf.render();
 
 		//this.canvas.put();
 		this.canvas.refreshImageData();

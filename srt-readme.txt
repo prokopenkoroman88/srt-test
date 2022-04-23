@@ -470,6 +470,196 @@ no changes added to commit (use "git add" and/or "git commit -a")
 $
 
 
+-----------------------------------------------------------
+17.4.22
+
+		let aDot = [
+			{x:40, y:10, rgba:[255,0,0,255]},
+			{x:10, y:60, rgba:[0,255,0,255]},
+			{x:80, y:90, rgba:[0,0,255,255]},
+		];
+
+
+		let aPairAngle = new Array(aDot.length);
+		for(let i=0; i<aDot.length; i++)
+			aPairAngle[i] = Math.atan2( aDot[(i+1)%3].y-aDot[i].y , aDot[(i+1)%3].x-aDot[i].x );
+
+
+
+
+/*
+		let longitude=Math.atan2(d2.y-d1.y, d2.x-d1.x);//долгота оттенок
+		let latitude =Math.atan2(d2.z-d1.z, Math.sqrt( Math.pow(d2.x-d1.x,2) + Math.pow(d2.y-d1.y,2) ) );//широта  яркость
+
+
+			points[i].y = Math.round(this.y-Math.cos(angle)*rad*10)/10;
+			points[i].x = Math.round(this.x+Math.sin(angle)*rad*10)/10;
+*/
+
+
+
+		let aWorkAngle = new Array(aDot.length);
+		let aPercAngle = new Array(aDot.length);
+		//
+		let rgba = [0,0,0,255];
+		for(let i=0; i<100; i++)
+		for(let j=0; j<100; j++)
+		{
+
+			for(let k=0; k<aDot.length; k++)
+				aWorkAngle[k] = Math.atan2( i-aDot[k].y ,j-aDot[k].x );// [-PI .. +PI]
+			let in3 = 0;
+			for(let k=0; k<aDot.length; k++){
+				let angleL = aPairAngle[(k+2)%3] + Math.PI;
+				if(angleL>Math.PI)angleL-=(2*Math.PI);
+				let angleC = aWorkAngle[k];
+				let angleR = aPairAngle[k];
+				//aWorkAngle[k] = 
+				if(angleR<angleL)angleR+=(2*Math.PI);
+				if(angleL<=angleC && angleC<=angleR){
+					in3++;
+					aPercAngle[k]=(angleC-angleL)/(angleR-angleL);//[0..1]
+				};
+			};
+			//
+
+			//console.log('*',i,j,in3);
+			if(in3===3){
+/*
+             aDot[0] 
+             /    \
+          aPercAngle[0]  
+
+
+  1=aDot[1]
+
+                          0=aDot[2]
+
+
+*/
+
+				//aPercAngle[0]  
+				for(let z=0; z<3; z++){
+					rgba[z] =
+					Math.round(
+					aDot[0].rgba[z]*(1-aPercAngle[1] + aPercAngle[2] )/2  +
+					aDot[1].rgba[z]*(1-aPercAngle[2] + aPercAngle[0] )/2  +  
+					aDot[2].rgba[z]*(1-aPercAngle[0] + aPercAngle[1] )/2    
+					); 
+				};
+				//
+				//
+				this.canvas.setRGB(j,i,rgba);
+			};
+
+		};
+		this.canvas.put();
+
+
+===================================
+
+
+		let aDot = [
+			{x:40, y:10, rgba:[255,0,0,255]},
+			{x:10, y:60, rgba:[0,255,0,255]},
+			{x:80, y:90, rgba:[0,0,255,255]},
+		];
+
+
+		let aPairAngle = new Array(aDot.length);
+		for(let i=0; i<aDot.length; i++)
+			aPairAngle[i] = Math.atan2( aDot[(i+1)%3].y-aDot[i].y , aDot[(i+1)%3].x-aDot[i].x );
+
+
+
+
+/*
+		let longitude=Math.atan2(d2.y-d1.y, d2.x-d1.x);//долгота оттенок
+		let latitude =Math.atan2(d2.z-d1.z, Math.sqrt( Math.pow(d2.x-d1.x,2) + Math.pow(d2.y-d1.y,2) ) );//широта  яркость
+
+
+			points[i].y = Math.round(this.y-Math.cos(angle)*rad*10)/10;
+			points[i].x = Math.round(this.x+Math.sin(angle)*rad*10)/10;
+*/
+
+function distance(x0,y0,x1,y1){
+	return Math.sqrt(Math.pow(x1-x0,2) + Math.pow(y1-y0,2));
+}
+
+		let aWorkAngle = new Array(aDot.length);
+		let aPercAngle = new Array(aDot.length);
+		let aWorkDist = new Array(aDot.length);
+		//
+		let rgba = [0,0,0,255];
+		for(let i=0; i<100; i++)
+		for(let j=0; j<100; j++)
+		{
+
+			for(let k=0; k<aDot.length; k++)
+				aWorkAngle[k] = Math.atan2( i-aDot[k].y ,j-aDot[k].x );// [-PI .. +PI]
+			let in3 = 0;
+			for(let k=0; k<aDot.length; k++){
+				let angleL = aPairAngle[(k+2)%3] + Math.PI;
+				if(angleL>Math.PI)angleL-=(2*Math.PI);
+				let angleC = aWorkAngle[k];
+				let angleR = aPairAngle[k];
+				//aWorkAngle[k] = 
+				if(angleR<angleL){
+					if(angleC<angleR)
+						angleC+=(2*Math.PI);
+					angleR+=(2*Math.PI);
+					
+				};
+				if(angleL<=angleC && angleC<=angleR){
+					in3++;
+					aPercAngle[k]=(angleC-angleL)/(angleR-angleL);//[0..1]
+					aWorkDist[k]=distance(j,i, aDot[k].x,aDot[k].y);
+				};
+			};
+			//
+
+			//console.log('*',i,j,in3);
+			if(in3===3){
+/*
+             aDot[0] 
+             /    \
+          aPercAngle[0]  
+
+
+  1=aDot[1]
+
+                          0=aDot[2]
+
+
+*/
+				let maxDist=0;
+				for(let z=0; z<3; z++)
+					//if(maxDist<aWorkDist[z])
+						//maxDist=aWorkDist[z];
+					maxDist+=aWorkDist[z]/2;
+
+
+				for(let z=0; z<3; z++)
+					aWorkDist[z]=aWorkDist[z]/maxDist;
+
+
+
+				//aPercAngle[0]  
+				for(let z=0; z<3; z++){
+					rgba[z] =
+					Math.round(
+					aDot[0].rgba[z]*((1-aPercAngle[1])*aWorkDist[1] + aPercAngle[2]*aWorkDist[2] )/2  +
+					aDot[1].rgba[z]*((1-aPercAngle[2])*aWorkDist[2] + aPercAngle[0]*aWorkDist[0] )/2  +  
+					aDot[2].rgba[z]*((1-aPercAngle[0])*aWorkDist[0] + aPercAngle[1]*aWorkDist[1] )/2    
+					); 
+				};
+				//
+				//
+				this.canvas.setRGB(j,i,rgba);
+			};
+
+		};
+		this.canvas.put();
 
 
 
