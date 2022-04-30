@@ -33,6 +33,17 @@ class TriangleFiller{
 
 	prepareAreas(){
 		for(let i=0; i<this.areas.length; i++){
+			if(!this.areas[i].aDot){
+				this.areas[i].aDot = new Array(this.areas[i].pointIds.length);
+				for(let k=0; k<this.areas[i].aDot.length; k++)
+					this.areas[i].aDot[k] = this.points[this.areas[i].pointIds[k]];
+			};
+			this.areas[i].rect={
+				x0:Math.min(this.areas[i].aDot[0].x, this.areas[i].aDot[1].x, this.areas[i].aDot[2].x),
+				y0:Math.min(this.areas[i].aDot[0].y, this.areas[i].aDot[1].y, this.areas[i].aDot[2].y),
+				x1:Math.max(this.areas[i].aDot[0].x, this.areas[i].aDot[1].x, this.areas[i].aDot[2].x),
+				y1:Math.max(this.areas[i].aDot[0].y, this.areas[i].aDot[1].y, this.areas[i].aDot[2].y),
+			}
 			//
 			if(!this.areas[i].aPairAngle)
 				this.areas[i].aPairAngle = new Array(this.areas[i].pointIds.length);
@@ -47,6 +58,52 @@ class TriangleFiller{
 		};//i++
 	}
 
+	renderArea(j, i, area){
+		if(i<area.rect.y0 || i>area.rect.y1 || j<area.rect.x0 || j>area.rect.x1)
+			return false;
+
+		let in3 = 0;
+		for(let k=0; k<3; k++){
+			this.aWorkAngle[k] = Math.atan2( i-area.aDot[k].y ,j-area.aDot[k].x );// [-PI .. +PI]
+			let angleL = area.aPairAngle[(k+2)%3] + Math.PI;
+			if(angleL>Math.PI)angleL-=(2*Math.PI);
+			let angleC = this.aWorkAngle[k];
+			let angleR = area.aPairAngle[k];
+			if(angleR<angleL){
+				if(angleC<angleR)
+					angleC+=(2*Math.PI);
+				angleR+=(2*Math.PI);
+			};
+			if((angleL-0.01)<=angleC && angleC<=(angleR+0.01)){
+				in3++;
+				this.aPercAngle[k]=(angleC-angleL)/(angleR-angleL);//[0..1]
+				this.aWorkDist[k]=distance(j,i, area.aDot[k].x,area.aDot[k].y);
+			};
+		};
+
+		//console.log('*',i,j,in3);
+		if(in3!==3)
+			return false;
+
+		let maxDist=0;
+		for(let z=0; z<3; z++)
+			maxDist+=this.aWorkDist[z]/2;
+
+		for(let z=0; z<3; z++)
+			this.aWorkDist[z]=this.aWorkDist[z]/maxDist;
+
+		for(let z=0; z<3; z++){
+			this.rgba[z] =
+			Math.round(
+				area.aDot[0].rgba[z]*((1-this.aPercAngle[1])*this.aWorkDist[1] + this.aPercAngle[2]*this.aWorkDist[2] )/2  +
+				area.aDot[1].rgba[z]*((1-this.aPercAngle[2])*this.aWorkDist[2] + this.aPercAngle[0]*this.aWorkDist[0] )/2  +  
+				area.aDot[2].rgba[z]*((1-this.aPercAngle[0])*this.aWorkDist[0] + this.aPercAngle[1]*this.aWorkDist[1] )/2    
+			); 
+		};
+		this.canvas.setRGB(j,i,this.rgba);
+		return true;
+	}
+
 	render(){
 		this.prepareAreas();
 
@@ -57,7 +114,9 @@ class TriangleFiller{
 
 
 			for(let iArea=0; iArea<this.areas.length; iArea++){
-
+				if(this.renderArea(j, i, this.areas[iArea]))
+					break;
+/*
 				let area = this.areas[iArea];
 				for(let k=0; k<3; k++)
 					this.aDot[k] = this.points[area.pointIds[k]];
@@ -109,6 +168,7 @@ class TriangleFiller{
 					break;
 				};
 
+*/
 			};//iArea
 
 
