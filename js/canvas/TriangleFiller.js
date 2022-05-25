@@ -18,16 +18,61 @@ class TriangleFiller{
 
 	testInit(){
 		this.points=[
-			{x:70, y:60, rgba:[255,0,0,255]},
+			{x:40, y:40, rgba:[255,0,0,255]},
 			{x:10, y:10, rgba:[0,255,0,255]},
-			{x:40, y:90, rgba:[0,0,255,255]},
+			{x:20, y:90, rgba:[0,0,255,255]},
 			{x:90, y:20, rgba:[255,0,255,255]},
 		];
 
 		this.areas=[
 			{pointIds:[0,1,2]},
 			{pointIds:[1,0,3]},
+			{pointIds:[2,0,3]},
 		];
+
+		this.points.push({x:150, y:50, rgba:[Math.random()*255,Math.random()*255,Math.random()*255,255]})
+		for(let i=0; i<6; i++){
+			let angle=i/6*2*Math.PI;
+			let x1 = this.points[4].x + Math.sin(angle)*45 + Math.random()*30-15;
+			let y1 = this.points[4].y - Math.cos(angle)*45 + Math.random()*30-15;
+			this.points.push({x:x1, y:y1, rgba:[0,0,0/*Math.random()*255,Math.random()*255,Math.random()*255*/,255]});
+		};
+		for(let i=0; i<6; i++){
+			this.areas.push({pointIds:[4,5+(i),5+(i+1)%6]});
+		};
+/*
+//----------
+		this.points.push({x:229, y:50, rgba:[Math.random()*255,Math.random()*255,Math.random()*255,255]})
+		for(let i=0; i<4; i++){
+			let angle=i/6*2*Math.PI;
+			let x1 = this.points[11].x + Math.sin(angle)*45 + Math.random()*30-15;
+			let y1 = this.points[11].y - Math.cos(angle)*45 + Math.random()*30-15;
+			this.points.push({x:x1, y:y1, rgba:[Math.random()*255,Math.random()*255,Math.random()*255,255]});
+		};
+		for(let i=0; i<3; i++){
+			this.areas.push({pointIds:[11,12+(i),12+(i+1)]});
+		};
+		this.areas.push({pointIds:[11,15,7]});
+		this.areas.push({pointIds:[11,7,6]});
+		this.areas.push({pointIds:[11,6,12]});
+//------------
+		this.points.push({x:190, y:120, rgba:[Math.random()*255,Math.random()*255,Math.random()*255,255]})
+		for(let i=2; i<5; i++){
+			let angle=i/6*2*Math.PI;
+			let x1 = this.points[16].x + Math.sin(angle)*45 + Math.random()*30-15;
+			let y1 = this.points[16].y - Math.cos(angle)*45 + Math.random()*30-15;
+			this.points.push({x:x1, y:y1, rgba:[Math.random()*255,Math.random()*255,Math.random()*255,255]});
+		};
+		this.areas.push({pointIds:[16,7,15]});
+		this.areas.push({pointIds:[16,15,17]});
+		this.areas.push({pointIds:[16,17,18]});
+		this.areas.push({pointIds:[16,18,19]});
+		this.areas.push({pointIds:[16,19,8]});
+		this.areas.push({pointIds:[16,8,7]});
+*/
+
+		this.height = 200;
+		this.width = 300;
 	}
 
 	prepareAreas(){
@@ -106,7 +151,8 @@ class TriangleFiller{
 				in3++;
 				this.aPercAngle[k]=(angleC-angleL)/(angleR-angleL);//[0..1]
 				this.aWorkDist[k]=distance(j,i, area.aDot[k].x,area.aDot[k].y);
-			};
+			}
+			else break;
 		};
 
 		//console.log('*',i,j,in3);
@@ -132,6 +178,7 @@ class TriangleFiller{
 			let percAngle = aPercAngle[iDot];
 			if(invers)
 				percAngle = 1-percAngle;
+			percAngle=(Math.sin((percAngle-0.5)*Math.PI)+1)/2;
 			return percAngle*aWorkDist[iDot];
 		};
 		for(let z=0; z<3; z++){
@@ -152,8 +199,8 @@ class TriangleFiller{
 		this.prepareAreas();
 
 
-		for(let i=0; i<100; i++)
-		for(let j=0; j<100; j++)
+		for(let i=0; i<this.height; i++)
+		for(let j=0; j<this.width; j++)
 		{
 
 

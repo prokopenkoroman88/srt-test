@@ -187,16 +187,10 @@ export default class AreaTree{
 	rect={x0:32000,y0:32000, x1:-1,y1:-1};
 	count=0;
 
-	constructor(){
+	constructor(parent=null){
 		this.tree = new AreaItem2(null);//(this);
-
-
-
-		///////////return;
-		//this.item1 = new AreaItem1();
-		//this.item2 = new AreaItem1();
-		//this.item3 = new AreaItem1();
-
+		this.parent=parent;
+		this.children=[];
 	}
 
 
@@ -362,6 +356,16 @@ export default class AreaTree{
 
 	isPointInRect(x,y){
 		return (this.rect.x0<=x)&&(x<=this.rect.x1)&&(this.rect.y0<=y)&&(y<=this.rect.y1);
+	}
+
+
+	isRectCrossRect(rect){
+		return ((this.rect.x0<=rect.x1)||(rect.x0<=this.rect.x1))&&((this.rect.y0<=rect.y1)||(rect.y0<=this.rect.y1));
+	}
+
+
+	isRectInRect(rect){
+		return (this.rect.x0<=rect.x0)&&(rect.x1<=this.rect.x1)&&(this.rect.y0<=rect.y0)&&(rect.y1<=this.rect.y1);
 	}
 
 
