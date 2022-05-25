@@ -131,6 +131,7 @@ class JPGAnalyzer extends RealCanvas{
 		  	  .up()
 		  	.button('').inner('atan2').assignTo('btnAtan2')
 		  	.button('').inner('8x8').assignTo('btn8x8')
+		  	.button('').inner('smooth').assignTo('btnSmooth')
 		  	.button('').inner('mu').assignTo('btnMu')
 //			.button('').inner('Arrow').assignTo('btnArrow')
 //			.button('').inner('AddLayer').assignTo('btnAddLayer')
@@ -283,6 +284,10 @@ class JPGAnalyzer extends RealCanvas{
 			this1.put();
 		});
 
+		this.btnSmooth.currHTMLTag.addEventListener('click', function(){
+			JPGAnalyzer.analyzer.smoothCells();
+		});
+
 		this.btnMu.currHTMLTag.addEventListener('click', function(){
 
 			let this1 = JPGAnalyzer.analyzer;
@@ -296,7 +301,7 @@ class JPGAnalyzer extends RealCanvas{
 				let a=[];
 				let rgba2=[0,0,0,0];
 				
-				if(i%10==0)console.log(i);
+				if(i%100==0)console.log(i);
 				pixelVector.init(Math.round(this1.width/3)-1/*this1.x1-1*/,this1.y1+i);
 
 				for(let j=0; j<this1.width/3; j++){
@@ -305,10 +310,30 @@ class JPGAnalyzer extends RealCanvas{
 
 					rgba2 = pixelVector.getRGB(0,0);
 					let grd=pixelVector.mu_Grad;
-					if(!grd)grd=0;
+					if(!grd || grd<0)grd=0;
 					let equ=pixelVector.mu_Equal;
-					if(!equ)equ=0;
+					if(!equ || equ<0)equ=0;
 
+//
+
+
+
+/*
+				let iArea=-1;
+				for(let k=0; k<aColorAreas.length; k++){
+					if(this.isOne(aColorAreas[k].color.toArray(),rgba) && aColorAreas[k].isPointNear(j,i)){ //need merge
+						//
+						iArea=k;
+					};//isOne
+				};//k
+				if(iArea<0){//если не нашли
+					iArea = aColorAreas.push( new ColorArea(rgba) )-1;
+				};
+				aColorAreas[iArea].addPoint(j,i);
+*/
+
+
+					grd*=(+pixelVector.gradDist);
 
 					/*if(equ==1 && grd==0){
 						rgba2[0]=255;
@@ -511,6 +536,64 @@ class JPGAnalyzer extends RealCanvas{
 
 	}//vawes
 
+	smoothCells(){
+
+		let aAvgH = new Array(8);//horiz -|-
+		let aAvgV = new Array(8);//vert ---+----
+
+
+		for(let iCell=0; iCell<this.height/8; iCell++){
+			if(iCell%100==0)console.log(iCell*8);
+			for(let jCell=0; jCell<this.width/(8*3); jCell++){
+
+				for(let i=0; i<8; i++){
+					aAvgH[i]=[0,0,0];//rgb
+					aAvgV[i]=[0,0,0];//rgb
+
+					for(let j=0; j<8; j++){
+						this.rgba = this.getRGB( Math.round(this.width/3)+ jCell*8+j+4+3,iCell*8+i+4);
+						for(let k=0; k<3; k++)
+							aAvgH[i][k]+=this.rgba[k];
+						this.rgba = this.getRGB( Math.round(this.width/3)+ jCell*8+i+4+3,iCell*8+j+4);
+						for(let k=0; k<3; k++)
+							aAvgV[i][k]+=this.rgba[k];
+					};
+					for(let k=0; k<3; k++){
+						aAvgH[i][k]=Math.round(aAvgH[i][k]/8);
+						aAvgV[i][k]=Math.round(aAvgV[i][k]/8);
+					};
+				};
+			//-----
+				for(let i=0; i<8; i++){
+					for(let j=0; j<8; j++){
+						this.rgba = this.getRGB( Math.round(this.width/3)+ jCell*8+j+4+3,iCell*8+i+4);
+
+						//if(i>1 && i<6 && j>1 && j<6)
+						//if(i>=1 && i<=6 && j>=1 && j<=6)
+						for(let k=0; k<3; k++){
+/*
+							let hCoef=3.5-Math.abs(j-3.5);//0 1 2 3 3 2 1 0
+							let vCoef=3.5-Math.abs(i-3.5);
+							hCoef = (-Math.cos(hCoef/7*Math.PI*2)+1)/2;
+							vCoef = (-Math.cos(vCoef/7*Math.PI*2)+1)/2;
+*/
+							let hCoef=(-Math.cos((j+0.5)/8*2*Math.PI)+1)/(2 +1);
+							let vCoef=(-Math.cos((i+0.5)/8*2*Math.PI)+1)/(2 +1);
+
+
+							let coef=(2-0)-hCoef-vCoef;
+							this.rgba[k] = Math.round((coef*this.rgba[k] + hCoef*aAvgH[i][k] + vCoef*aAvgV[j][k])/(2-0));
+						};
+
+
+						this.setRGB( Math.round(this.width/3)+ jCell*8+j+4+3,iCell*8+i+4,this.rgba);
+					};//j
+				};//i
+
+			};//jCell
+		};//iCell
+		this.put();
+	}
 
 /*
 

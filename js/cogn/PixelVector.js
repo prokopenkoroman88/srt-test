@@ -10,6 +10,12 @@ const ca_None=0,ca_Equal=1,ca_Grad=2,ca_I=3,ca_Y=4,ca_X=5,ca_Dot=6,ca_Bunt=7;
 const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
 const cBtm=0, cUp=1, cTop=2, cDn=3, cNone=4;
 
+function incLook(look, incValue=1){
+	return (look + incValue) % 8;
+};
+function decLook(look, decValue=1){
+	return (look - incValue + 8) % 8;
+};
 
 class PixelVector{//+9.2.22
 
@@ -201,17 +207,103 @@ class PixelVector{//+9.2.22
 		return aDistZigzag;
 	}//createDistZigzag
 
-
-	calcMu_GradByDistZigzag(aDistZigzag, aClrAngle, aClrDist){
-
-		let mu_Grad=0;
+	createMinDist(aDistZigzag=null){
 		let aMinDist=[];
+		if(!aDistZigzag)
+			aDistZigzag=this.aDistZigzag;
 		for(let z=0; z<aDistZigzag.length; z++)
 			if(aDistZigzag[z].kind==cBtm)
-				aMinDist.push(z);
+				aMinDist.push(z);		
+		return aMinDist;
+	}
 
-		if(aMinDist.length==2){
+	getBridge(iBridge){
+		iBridge = iBridge % this.aMinDist.length;
+		return this.aDistZigzag[this.aMinDist[iBridge]];
+	}
+
+	getSide(iSide){
+		let bridge0 = this.getBridge(iSide);
+		let bridge1 = this.getBridge(iSide+1);
+		return{
+			z0:bridge0.start + bridge0.count-1,
+			z1:bridge1.start,
+			//z0 & z1 - направления розы ветров, где мосты, между мостами - крылья градиента
+		};
+	}
+
+	prepareSides(aClrAngle, aClrDist){
+		let sideCount=this.aMinDist.length;
+		if(sideCount<2)
+			return sideCount;
+
+			this.avgAngle=new Array(sideCount);
+			this.skoAngle=new Array(sideCount);
+			this.avgDist =new Array(sideCount);
+			for(let iSide=0; iSide<sideCount; iSide++){
+				let side = this.getSide(iSide);
+				let z0=side.z0;
+				let z1=side.z1;
+				//z0 & z1 - направления розы ветров, где мосты, между мостами - крылья градиента
+				let z=incLook(z0);
+				//let z=(z0+1) % 8;
+
+
+				let wide=0;
+				this.avgAngle[iSide]={lat:0,long:0,};
+				this.avgDist[iSide]=0;
+				while (z!=z1) {
+					//console.log('avgAngle['+iSide+']='+avgAngle[iSide]+' z='+z);
+					this.avgAngle[iSide].lat+=aClrAngle[z].lat;//яркость
+					let long=aClrAngle[z].long;
+					if(long<0) long+=Math.PI*2;					
+					this.avgAngle[iSide].long+=long;//оттенок
+					this.avgDist[iSide]+=aClrDist[z];
+
+					wide++;
+					z=incLook(z);
+					//z=(z+1) % 8;					
+				};//avg
+				this.avgAngle[iSide].long=this.avgAngle[iSide].long/wide;
+				this.avgAngle[iSide].lat=this.avgAngle[iSide].lat/wide;
+				this.avgDist[iSide]=this.avgDist[iSide]/wide;
+
+
+				z=incLook(z0);
+				//z=(z0+1) % 8;
+				this.skoAngle[iSide]={lat:0,long:0,};
+				while (z!=z1) {
+					this.skoAngle[iSide].lat+=Math.pow((this.avgAngle[iSide].lat-aClrAngle[z].lat),2);//яркость
+					let long=aClrAngle[z].long;
+					if(long<0) long+=Math.PI*2;
+					this.skoAngle[iSide].long+=Math.pow((this.avgAngle[iSide].long-long),2);//оттенок
+					//console.log('skoAngle['+iSide+']: lat='+skoAngle[iSide].lat+' long='+skoAngle[iSide].long+ ' z='+z);
+
+					z=incLook(z);
+					//z=(z+1) % 8;					
+				};//sko
+
+				this.skoAngle[iSide].long = Math.sqrt(this.skoAngle[iSide].long);
+				this.skoAngle[iSide].lat  = Math.sqrt(this.skoAngle[iSide].lat );
+
+				//aDistZigzag[z]
+
+			};//for iSide
+
+		return sideCount;
+	}
+
+	calcMu_GradByDistZigzag(aClrAngle, aClrDist){
+
+		let mu_Grad=0;
+//		let aMinDist=[];
+//		for(let z=0; z<aDistZigzag.length; z++)
+//			if(aDistZigzag[z].kind==cBtm)
+//				aMinDist.push(z);
+
+		if(this.aMinDist.length==2){
 			//ca_Grad
+/*
 			let avgAngle=new Array(2);
 			let skoAngle=new Array(2);
 			let avgDist =new Array(2);
@@ -259,6 +351,7 @@ class PixelVector{//+9.2.22
 				//aDistZigzag[z]
 
 			};//for iSide
+*/
 
 			//for(let iSide=0; iSide<aMinDist.length; iSide++)
 				//console.log(iSide, avgAngle[iSide]);
@@ -276,6 +369,7 @@ class PixelVector{//+9.2.22
 			mu_long = mu_long * (1-skoAngle[0].long) * (1-skoAngle[1].long);
 
 			mu_Grad = Math.max(mu_lat,mu_long);//?даже если градиент маленький, он всё равно градиент//*gradDist;
+			mu_Grad *= gradDist;//с учетом крутизны градиента
 /*
 			this.mu_Grad = (avgAngle[0].lat+avgAngle[1].lat) + (skoAngle[0].lat+skoAngle[1].lat)
 			 + (Math.abs(avgAngle[0].long-avgAngle[1].long) - Math.PI) + (skoAngle[0].long+skoAngle[1].long);
@@ -287,7 +381,29 @@ class PixelVector{//+9.2.22
 		};//min dist = 2
 		return mu_Grad;
 	}//calcMu_GradByDistZigzag
+	calcGradDist(){
+		return Math.sqrt(this.avgDist[0]+this.avgDist[1]);//чтоб умножить на дистанцию обоих крыльев градиента
+	}
+	calcMu_Grad(){
+		let mu_Grad=0;
 
+		let mu_lat = PixelVector.gaussian(this.avgAngle[0].lat+this.avgAngle[1].lat);//1
+		mu_lat = mu_lat * (1-this.skoAngle[0].lat) * (1-this.skoAngle[1].lat);
+
+		let mu_long = PixelVector.gaussian(Math.abs(this.avgAngle[0].long-this.avgAngle[1].long), 1, Math.PI);
+		mu_long = mu_long * (1-this.skoAngle[0].long) * (1-this.skoAngle[1].long);
+
+		mu_Grad = Math.max(mu_lat,mu_long);//?даже если градиент маленький, он всё равно градиент//*gradDist;
+		//mu_Grad *= this.gradDist;//с учетом крутизны градиента
+/*
+			this.mu_Grad = (avgAngle[0].lat+avgAngle[1].lat) + (skoAngle[0].lat+skoAngle[1].lat)
+			 + (Math.abs(avgAngle[0].long-avgAngle[1].long) - Math.PI) + (skoAngle[0].long+skoAngle[1].long);
+			 //нужно бы умножить на дистанци обоих крыльев градиента...?????
+			 //чем ближе к 0 - тем лучше
+			 this.mu_Grad = gaussian(this.mu_Grad, 1,0,1);
+*/
+		return mu_Grad;
+	}//calcMu_Grad
 
 
 	calc(){
@@ -332,10 +448,20 @@ how many bridges
 		//this.mu_Equal = this.calcMu_EqualByDistMediana(aClrDist);
 
 		//массив секторов с цветовыми расстояниями от цветовых координат центрального пикселя
-		let aDistZigzag=this.createDistZigzag(aClrDist);
+		this.aDistZigzag=this.createDistZigzag(aClrDist);
+		this.aMinDist=this.createMinDist();
+		let sideCount=this.prepareSides(aClrAngle, aClrDist);
+		if(sideCount==2){
+			this.gradDist=this.calcGradDist();
+			this.mu_Grad=this.calcMu_Grad();
+		}
+		else{
+			this.gradDist=0;
+			this.mu_Grad=0;
+		};
 
 //angles: [-PI..PI]
-		this.mu_Grad=this.calcMu_GradByDistZigzag(aDistZigzag, aClrAngle, aClrDist);
+		//?//this.mu_Grad=this.calcMu_GradByDistZigzag(aDistZigzag, aClrAngle, aClrDist);
 
 
 
