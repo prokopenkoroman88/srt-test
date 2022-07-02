@@ -19,6 +19,30 @@
 
 
 
-	<script src="../js/pict-script.js" type="module"></script>	
+<!--	<script src="../js/pict-script.js" type="module"></script>	-->
+<script type="module">
+import ColorMap from './../js/canvas/VirtualCanvas.js';
+import Canvas from './../js/canvas/RealCanvas.js';
+import PixelColor from './../js/canvas/PixelColor.js';
+import { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierCanvas } from './../js/canvas/BezierFigure.js';
+import BezierEditor from './../js/BezierEditor.js';
+
+
+let editor,cnv1;
+
+const pictModeJPG='JPG', pictModeBezier='Bezier';
+const pictMode = pictModeBezier;
+
+switch (pictMode) {
+	case pictModeBezier:{
+		editor = new BezierEditor('#top-panel','#cnv1');
+		cnv1 = editor.canvas;
+
+		cnv1.resize(800,1200);//h,w
+		cnv1.ctx.strokeRect(0,0,1200,800);
+	}; break;
+};//switch pictMode
+
+</script>
 </body>
 </html>

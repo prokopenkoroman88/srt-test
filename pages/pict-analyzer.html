@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Picture analyzer</title>
+	<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 	<a href="/">home</a>
@@ -18,6 +19,82 @@
 
 
 
-	<script src="../js/pict-script.js" type="module"></script>	
+<!--	<script src="../js/pict-script.js" type="module"></script>	-->
+<script type="module">
+import ColorMap from './../js/canvas/VirtualCanvas.js';
+import Canvas from './../js/canvas/RealCanvas.js';
+import PixelColor from './../js/canvas/PixelColor.js';
+import { JPGAnalyzer } from './../js/cogn/JPG-Analyzer.js';
+
+
+let cnv1 = new Canvas('#cnv1');
+let jpgAnalyzer;
+
+
+const imgPath = '/images/km/wenn20219628.jpg';
+const pictModeJPG='JPG', pictModeBezier='Bezier';
+const pictMode = pictModeJPG;
+
+
+let imgMan = new Image();
+//canvas.crossOrigin = 'anonymous';//?
+document.body.append(imgMan);
+imgMan.style.visibility = 'hidden';
+//this.imgMan.style.display = 'none';
+
+switch (pictMode) {
+	case pictModeJPG:{
+		imgMan.src = imgPath;
+
+		imgMan.addEventListener('load', function(){
+
+			console.log('imgMan.onLoad:');
+			console.log(this);
+			//Main.self.manMap.resize(400,200);
+			cnv1.resize(imgMan.clientHeight,imgMan.clientWidth);
+			cnv1.applImage(imgMan,{x:0,y:0});//, w:200,h:400
+
+			cnv1.refreshImageData();
+
+
+			//document.body.remove(imgMan);
+			imgMan.remove();
+
+			jpgAnalyzer = new JPGAnalyzer('#cnv1');//cnv1 д.б. уже готов
+			jpgAnalyzer.buildControlPanel('#top-panel');
+
+			cnv1.canvas.addEventListener('click', function(event){
+				console.log(event);
+				let x=event.offsetX;
+				let y=event.offsetY;
+				console.log(x,y);
+			});
+
+			cnv1.canvas.addEventListener('mousemove', function(event){
+				//console.log(event);
+				let x=event.offsetX;
+				let y=event.offsetY;
+				console.log(x,y);
+				jpgAnalyzer.showLupa(x+Math.round(jpgAnalyzer.width/3)-1,y);
+			});
+
+		});
+	}; break;
+};//switch pictMode
+
+
+function show(){
+	jpgAnalyzer.initRect();
+	//jpgAnalyzer.plavno();
+	//jpgAnalyzer.vawes();
+	//jpgAnalyzer.byEpicenters();
+	//jpgAnalyzer.by3Colors();
+	jpgAnalyzer.byClasters();
+	jpgAnalyzer.put();
+};
+
+document.querySelector('#btn-show').addEventListener('click', show);
+
+</script>
 </body>
 </html>
