@@ -3,6 +3,9 @@ import { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierLayer, Bez
 import PixelColor from './canvas/PixelColor.js';
 import JSONLoader from './common/JSON-Loader.js';
 import TriangleFiller from './canvas/TriangleFiller.js';
+//import { SpatialScreen } from './3d/figures.js';
+import { TestScreen } from './3d/samples.js';
+import { SpatialRender } from './3d/rendering.js';
 
 const mouseMv=0, mouseDn=1, mouseUp=2;
 const btnLeft=0, btnRight=2;//from https://developer.mozilla.org/ru/docs/Web/API/Element/mousedown_event
@@ -612,9 +615,14 @@ layer objects:[]
 
 		};
 
-		let tf = new TriangleFiller(this.canvas);
-		tf.testInit();
-		tf.render();
+		//let tf = new TriangleFiller(this.canvas);
+		//tf.testInit();
+		//tf.render();
+
+		let screen = new TestScreen(32*10,32*10);//h,w SpatialScreen
+		let render = new SpatialRender(screen,this.canvas);
+		screen.init();
+		render.render();
 
 		//this.canvas.put();
 		this.canvas.refreshImageData();
