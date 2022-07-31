@@ -1,4 +1,4 @@
-
+﻿
 function distance(x0,y0,x1,y1){
 	return Math.sqrt(Math.pow(x1-x0,2) + Math.pow(y1-y0,2));
 }
@@ -80,7 +80,7 @@ export class SpatialDot extends SpatialItem{
 		let oz = eye.space.z;
 
 		let dx = (cx-ox) * Math.cos(eye.angles.a) + (cy-oy) * Math.sin(-eye.angles.a);
-		let dy = (oz-cz) * Math.cos(eye.angles.b) + (oy-cy) * Math.sin(-eye.angles.b);
+		let dy = (oz-cz) * Math.cos(eye.angles.b) + (oy-cy) * Math.sin(-eye.angles.b) + (cx-ox) * Math.sin(-eye.angles.c);//!!
 
 		this.plane.x = eye.screen.width/2  + dx/(this.dist*eye.screen.coefDist)*eye.screen.coefSize;
 		this.plane.y = eye.screen.height/2 + dy/(this.dist*eye.screen.coefDist)*eye.screen.coefSize;
@@ -410,6 +410,9 @@ class SpatialEye extends SpatialItem{
 		this.angles={a:0,b:0,c:0};//around z, around x
 		this.angles.a=0;//-Math.PI/4;//-0.1;
 		this.angles.b=-Math.PI/4;//45deg
+		this.angles.c=0;//-Math.PI/8;
+		this.angles.longitude=0;
+		this.angles.latitude=-Math.PI/4;//45deg
 	}
 
 }
@@ -424,6 +427,7 @@ export class SpatialScreen{
 
 		this.bodies=[];
 		this.eye = new SpatialEye(this ,{x:0,z:10000,y:-10000}, 'eye');
+		this.center = new SpatialItem({x:100,y:-400,z:0}, 'center');
 	}
 
 	init(){
@@ -431,6 +435,21 @@ export class SpatialScreen{
 
 	prepare(){
 		this.bodies.forEach((body)=>{ body.prepare(this.eye); });
+	}
+
+	rotateAround(delta){
+		rotate(this.center.space, [this.eye], {a:delta.longitude, b:0, c:0});//around center
+		console.log('eye.space:',this.eye.space);
+		this.eye.angles.longitude+=delta.longitude;
+		this.eye.angles.latitude +=delta.latitude;
+
+		//bounds:
+		//this.eye.angles.longitude=Math.max(Math.min(this.eye.angles.longitude,Math.PI  ),-Math.PI  );
+		//this.eye.angles.latitude =Math.max(Math.min(this.eye.angles.latitude ,Math.PI/2),-Math.PI/2);
+
+		this.eye.angles.a = this.eye.angles.longitude;
+		this.eye.angles.b = this.eye.angles.latitude *  Math.cos(this.eye.angles.longitude);
+		this.eye.angles.c = this.eye.angles.latitude * -Math.sin(this.eye.angles.longitude);
 	}
 
 }

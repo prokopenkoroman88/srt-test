@@ -26,16 +26,24 @@ import Canvas from './../js/canvas/RealCanvas.js';
 import PixelColor from './../js/canvas/PixelColor.js';
 import { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierCanvas } from './../js/canvas/BezierFigure.js';
 import BezierEditor from './../js/BezierEditor.js';
+import SpatialEditor from './../js/SpatialEditor.js';
 
 
 let editor,cnv1;
 
-const pictModeJPG='JPG', pictModeBezier='Bezier';
-const pictMode = pictModeBezier;
+const pictModeJPG='JPG', pictModeBezier='Bezier', pictModeSpatial='Spatial';
+const pictMode = pictModeSpatial;
 
 switch (pictMode) {
 	case pictModeBezier:{
 		editor = new BezierEditor('#top-panel','#cnv1');
+		cnv1 = editor.canvas;
+
+		cnv1.resize(800,1200);//h,w
+		cnv1.ctx.strokeRect(0,0,1200,800);
+	}; break;
+	case pictModeSpatial:{
+		editor = new SpatialEditor('#top-panel','#cnv1');
 		cnv1 = editor.canvas;
 
 		cnv1.resize(800,1200);//h,w
