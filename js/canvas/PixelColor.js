@@ -50,6 +50,38 @@ export default class PixelColor {
 
 // (r,g,b,a) [r,g,b,a] {r,g,b,a} '#rrggbb'?  'rgba(,,,)'
 
+	inverse(){
+		this.r=255-this.r;
+		this.g=255-this.g;
+		this.b=255-this.b;
+		return this;
+	}
+
+	toColor(){
+		function toHex(num){
+			let s=num.toString(16);
+			if(num<16)
+				s='0'+s;
+			return s;
+		};
+		return '#'+toHex(this.r)+toHex(this.g)+toHex(this.b);
+	}
+
+	toRGB(bOpacity=false){
+		if(bOpacity)
+			return 'rgba('+this.r+','+this.g+','+this.b+','+this.a+')'
+		else
+			return 'rgb('+this.r+','+this.g+','+this.b+')';
+	}
+
+	toHSL(){
+		return 'hsl('
+			+(this.getHue()/Math.PI*180).toFixed(0)+'deg,'
+			+(this.getContrast()*100).toFixed(1)+'%,'
+			+(this.getBrightness()*100).toFixed(1)+'%'
+		+')';
+	}
+
 	toArray(){
 		return [this.r, this.g, this.b, this.a];
 	}
@@ -70,14 +102,14 @@ export default class PixelColor {
 	}
 
 	static calcHue(rgba){//[0..1529]
-		function calc(_,L,C,R)
+		function calc(shift,left,center,right)
 		{
-			if (C==L) return (_+0)*255;
-			if (L==R) return (_+1)*255;
-			if (C==R) return (_+2)*255;
+			if (center==left ) return (shift+0)*255;
+			if (left  ==right) return (shift+1)*255;
+			if (center==right) return (shift+2)*255;
 
-			if (L>R) return (_+1)*255 +   Math.round((R-L)/(C-R)*255);
-			if (R>L) return (_+1)*255 +   Math.round((R-L)/(C-L)*255);
+			if (left>right) return (shift+1)*255 +   Math.round((right-left)/(center-right)*255);
+			if (right>left) return (shift+1)*255 +   Math.round((right-left)/(center-left)*255);
 		};
 		let r=rgba[0], g=rgba[1], b=rgba[2];
 		let hue;

@@ -122,17 +122,10 @@ class JPGAnalyzer extends RealCanvas{
 		this.root
 		.div('btns')
 		  .dn()
-		  	.div('lupa')//.attr('style','  ')
-		  	  .dn()
-		  		.table().assignTo('tblLupa')
-		  		  .dn()
-		  			.trtd('','',arr)
-		  		  .up()
-		  	  .up()
-		  	.button('').inner('atan2').assignTo('btnAtan2')
-		  	.button('').inner('8x8').assignTo('btn8x8')
-		  	.button('').inner('smooth').assignTo('btnSmooth')
-		  	.button('').inner('mu').assignTo('btnMu')
+			.button('#btn-show').inner('show').assignTo('btnShow')
+			.button('').inner('atan2').assignTo('btnAtan2')
+			.button('').inner('8x8').assignTo('btn8x8')
+			.button('').inner('smooth').assignTo('btnSmooth')
 //			.button('').inner('Arrow').assignTo('btnArrow')
 //			.button('').inner('AddLayer').assignTo('btnAddLayer')
 //			.button('').inner('AddPoint').assignTo('btnAddPoint')
@@ -147,6 +140,16 @@ class JPGAnalyzer extends RealCanvas{
 			console.log('editor.mode ', BezierEditor.editor.mode);
 		});
 */
+		this.btnShow.currHTMLTag.addEventListener('click', function(){
+			this.initRect();
+			//this.plavno();
+			//this.vawes();
+			//this.byEpicenters();
+			//this.by3Colors();
+			this.byClasters();
+			this.put();
+		}.bind(this));
+
 		this.btnAtan2.currHTMLTag.addEventListener('click', function(){
 			//
 			for(let y=-5; y<=5; y++)
@@ -288,72 +291,6 @@ class JPGAnalyzer extends RealCanvas{
 			JPGAnalyzer.analyzer.smoothCells();
 		});
 
-		this.btnMu.currHTMLTag.addEventListener('click', function(){
-
-			let this1 = JPGAnalyzer.analyzer;
-			let pixelVector = new PixelVector(this1);
-
-
-
-
-			for(let i=0; i<this1.height; i++){
-
-				let a=[];
-				let rgba2=[0,0,0,0];
-				
-				if(i%100==0)console.log(i);
-				pixelVector.init(Math.round(this1.width/3)-1/*this1.x1-1*/,this1.y1+i);
-
-				for(let j=0; j<this1.width/3; j++){
-					pixelVector.nextStep();
-					pixelVector.calc();
-
-					rgba2 = pixelVector.getRGB(0,0);
-					let grd=pixelVector.mu_Grad;
-					if(!grd || grd<0)grd=0;
-					let equ=pixelVector.mu_Equal;
-					if(!equ || equ<0)equ=0;
-
-//
-
-
-
-/*
-				let iArea=-1;
-				for(let k=0; k<aColorAreas.length; k++){
-					if(this.isOne(aColorAreas[k].color.toArray(),rgba) && aColorAreas[k].isPointNear(j,i)){ //need merge
-						//
-						iArea=k;
-					};//isOne
-				};//k
-				if(iArea<0){//если не нашли
-					iArea = aColorAreas.push( new ColorArea(rgba) )-1;
-				};
-				aColorAreas[iArea].addPoint(j,i);
-*/
-
-
-					grd*=(+pixelVector.gradDist);
-
-					/*if(equ==1 && grd==0){
-						rgba2[0]=255;
-						rgba2[1]=255;
-						rgba2[2]=255;
-					}
-					else*/
-					{
-						rgba2[0] = Math.round(grd*250);
-						rgba2[1] = Math.round(equ*250);
-						rgba2[2] = 0;
-					};
-					//console.log(i,j,rgba2);
-					this1.setRGB(this1.x1+j, this1.y1+i, rgba2);
-
-				};//j
-			};//i
-			this1.put();
-
-		});
 	}
 
 	isOne(rgba1,rgba2){
@@ -947,44 +884,6 @@ class JPGAnalyzer extends RealCanvas{
 
 	}//byClasters
 
-	showLupa(x,y){
-		//PixelVector:
-		this.controlVector.fill(x,y);//.init(x,y)
-		this.controlVector.calc();
-		let tbl = this.tblLupa.currHTMLTag;
-		let tds = tbl.querySelectorAll('td');
-		for(let i=0; i<5; i++){
-			for(let j=0; j<5; j++){
-				//
-				this.rgba=this.getRGB(x+j-2,y+i-2);
-				//console.log(x+j-2,y+i-2,this.rgba);
-				tds[i*5+j].style='background-color:rgb('+this.rgba[0]+','+this.rgba[1]+','+this.rgba[2]+'); color:rgb('+(255-this.rgba[0])+','+(255-this.rgba[1])+','+(255-this.rgba[2])+'); ';
-				//
-			};//j
-		};//i
-
-
-
-		const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
-
-		for(let i=0; i<8; i++){
-			//
-			let xx=2+aWindRose[i].dx;
-			let yy=2+aWindRose[i].dy;
-			
-			tds[yy*5+xx].innerHTML = 'ш'+Math.round(this.controlVector.angle[i].lat*100)/100 + '<br>д'+Math.round(this.controlVector.angle[i].long*100)/100 + '<br>r'+Math.round(this.controlVector.dist[i]*100)/100  ;
-		};//i++
-
-		let mu_Equal=this.controlVector.mu_Equal;
-		if(mu_Equal)
-			mu_Equal=Math.round(mu_Equal*100)/100;
-		let mu_Grad=this.controlVector.mu_Grad;
-		if(mu_Grad)
-			mu_Grad=Math.round(mu_Grad*100)/100;
-		tds[2*5+2].innerHTML = 'эк='+mu_Equal+'<br>гр='+mu_Grad;
-
-
-	}//showLupa
 
 
 };

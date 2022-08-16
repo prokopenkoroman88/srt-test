@@ -3,14 +3,15 @@
 const _w=32, _h=32;
 
 const aWindRose=//aArrow
-[{x: 0,y:-1}
-,{x: 1,y:-1}
-,{x: 1,y: 0}
-,{x: 1,y: 1}
-,{x: 0,y: 1}
-,{x:-1,y: 1}
-,{x:-1,y: 0}
-,{x:-1,y:-1}
+[{dx: 0,dy:-1}
+,{dx: 1,dy:-1}
+,{dx: 1,dy: 0}
+,{dx: 1,dy: 1}
+,{dx: 0,dy: 1}
+,{dx:-1,dy: 1}
+,{dx:-1,dy: 0}
+,{dx:-1,dy:-1}
+,{dx: 0,dy: 0}
 ];
 
 const aPointSect=

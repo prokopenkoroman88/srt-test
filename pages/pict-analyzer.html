@@ -8,7 +8,6 @@
 </head>
 <body>
 	<a href="/">home</a>
-	<button id="btn-show">show</button>
 	<div id="top-panel"></div>
 
 <canvas id="cnv1"></canvas>
@@ -25,15 +24,16 @@ import ColorMap from './../js/canvas/VirtualCanvas.js';
 import Canvas from './../js/canvas/RealCanvas.js';
 import PixelColor from './../js/canvas/PixelColor.js';
 import { JPGAnalyzer } from './../js/cogn/JPG-Analyzer.js';
+import  VectorAnalyzer  from './../js/cogn/VectorAnalyzer.js';
 
 
 let cnv1 = new Canvas('#cnv1');
-let jpgAnalyzer;
+let jpgAnalyzer, analyzer;
 
 
 const imgPath = '/images/km/wenn20219628.jpg';
-const pictModeJPG='JPG', pictModeBezier='Bezier';
-const pictMode = pictModeJPG;
+const pictModeJPG='JPG', pictModeVectorize='Vectorize';
+const pictMode = pictModeVectorize;
 
 
 let imgMan = new Image();
@@ -43,6 +43,17 @@ imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 
 switch (pictMode) {
+	case pictModeVectorize:{
+		imgMan.src = imgPath;
+		imgMan.addEventListener('load', function(){
+			cnv1.resize(imgMan.clientHeight,imgMan.clientWidth);
+			cnv1.applImage(imgMan,{x:0,y:0});//, w:200,h:400
+			cnv1.refreshImageData();
+			imgMan.remove();
+
+			analyzer = new VectorAnalyzer('#top-panel','#cnv1');//!
+		});
+	}; break;
 	case pictModeJPG:{
 		imgMan.src = imgPath;
 
@@ -75,25 +86,11 @@ switch (pictMode) {
 				let x=event.offsetX;
 				let y=event.offsetY;
 				console.log(x,y);
-				jpgAnalyzer.showLupa(x+Math.round(jpgAnalyzer.width/3)-1,y);
 			});
 
 		});
 	}; break;
 };//switch pictMode
-
-
-function show(){
-	jpgAnalyzer.initRect();
-	//jpgAnalyzer.plavno();
-	//jpgAnalyzer.vawes();
-	//jpgAnalyzer.byEpicenters();
-	//jpgAnalyzer.by3Colors();
-	jpgAnalyzer.byClasters();
-	jpgAnalyzer.put();
-};
-
-document.querySelector('#btn-show').addEventListener('click', show);
 
 </script>
 </body>

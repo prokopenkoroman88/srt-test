@@ -1,3 +1,4 @@
+import { aWindRose } from './../system.js';
 import CustomCanvas from './../canvas/CustomCanvas.js';
 //import VirtualCanvas from './../canvas/VirtualCanvas.js';
 //import RealCanvas from './../canvas/RealCanvas.js';
@@ -7,7 +8,7 @@ import PixelColor from './../canvas/PixelColor.js';
 
 
 const ca_None=0,ca_Equal=1,ca_Grad=2,ca_I=3,ca_Y=4,ca_X=5,ca_Dot=6,ca_Bunt=7;
-const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
+//const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
 const cBtm=0, cUp=1, cTop=2, cDn=3, cNone=4;
 
 function incLook(look, incValue=1){
@@ -240,10 +241,11 @@ class PixelVector{//+9.2.22
 			this.avgAngle=new Array(sideCount);
 			this.skoAngle=new Array(sideCount);
 			this.avgDist =new Array(sideCount);
+			this.sides = new Array(sideCount);
 			for(let iSide=0; iSide<sideCount; iSide++){
-				let side = this.getSide(iSide);
-				let z0=side.z0;
-				let z1=side.z1;
+				this.sides[iSide] = this.getSide(iSide);
+				let z0=this.sides[iSide].z0;
+				let z1=this.sides[iSide].z1;
 				//z0 & z1 - направления розы ветров, где мосты, между мостами - крылья градиента
 				let z=incLook(z0);
 				//let z=(z0+1) % 8;
@@ -287,6 +289,10 @@ class PixelVector{//+9.2.22
 				this.skoAngle[iSide].lat  = Math.sqrt(this.skoAngle[iSide].lat );
 
 				//aDistZigzag[z]
+				if(z1<z0)z1+=8;
+				//let wide=z1-z0;
+				this.sides[iSide].angle = ((z0 + z1)/2%8);
+				this.sides[iSide].wide = z1-z0+1;
 
 			};//for iSide
 
@@ -454,6 +460,10 @@ how many bridges
 		if(sideCount==2){
 			this.gradDist=this.calcGradDist();
 			this.mu_Grad=this.calcMu_Grad();
+
+			if(this.mu_Grad>0.5){
+				//
+			};
 		}
 		else{
 			this.gradDist=0;
