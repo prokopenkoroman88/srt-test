@@ -1,6 +1,6 @@
-import CustomCanvas from './CustomCanvas.js';
-import VirtualCanvas from './VirtualCanvas.js';
-import RealCanvas from './RealCanvas.js';
+//import CustomCanvas from './CustomCanvas.js';
+//import VirtualCanvas from './VirtualCanvas.js';
+//import RealCanvas from './RealCanvas.js';
 
 const cControlPoint=1, cBeforePoint=2, cAfterPoint=3, cRotatePoint=4;
 
@@ -27,10 +27,19 @@ function distance(x0,y0,x1,y1){
 	return Math.sqrt(Math.pow(x1-x0,2) + Math.pow(y1-y0,2));
 }
 
-class Point {
-	constructor(x,y){
+class FigureItem{
+	constructor(ownerFigure){
+		this.ownFigure=ownerFigure;
+	}
+}
+
+class Point extends FigureItem{
+	constructor(ownerFigure,x,y){
+		super(ownerFigure);
 		this.x = x;
 		this.y = y;
+		this.width = 1;
+		this.color = '#000';
 	}
 	shift(dx,dy){
 		this.x+=dx;
@@ -45,143 +54,73 @@ class Point {
 };
 
 class Rotor extends Point {
-	constructor(x,y,angle=0){
-		super(x,y);
+	constructor(ownerFigure,x,y,angle=0){
+		super(ownerFigure,x,y);
 		this.angle = angle;
-		this.pointIds = [];
-		this.rotorIds = [];//?
+		this.points = [];
+		this.rotors = [];//?
 	}
-	rotate(dangle, ownFigure){
+	rotate(dangle){
 		if(dangle==0) return;
-		let points = new Array(this.pointIds.length);
-		for(let i=0; i<this.pointIds.length; i++){
-			points[i]=ownFigure.points[ this.pointIds[i] ];
-		};
 		console.log('points of rotor:');
-		console.log(this.pointIds);
-		console.log(points);
-		for(let i=0; i<points.length; i++){
-			let rad = points[i].distance(this.x,this.y);
-			let angle = Math.atan2(points[i].y-this.y, points[i].x-this.x)+Math.PI/2;
+		console.log(this.points);
+		for(let i=0; i<this.points.length; i++){
+			let rad = this.points[i].distance(this.x,this.y);
+			let angle = Math.atan2(this.points[i].y-this.y, this.points[i].x-this.x)+Math.PI/2;
 			angle+=dangle;
-			points[i].y = Math.round(this.y-Math.cos(angle)*rad*10)/10;
-			points[i].x = Math.round(this.x+Math.sin(angle)*rad*10)/10;
-			//how rotate levers around points?
+			console.log('y0=',this.points[i].y,' x0=',this.points[i].x);
+			this.points[i].y = Math.round((this.y-Math.cos(angle)*rad)*10)/10;
+			this.points[i].x = Math.round((this.x+Math.sin(angle)*rad)*10)/10;
+			console.log('y1=',this.points[i].y,' x1=',this.points[i].x, 'rad=', rad);
 		};//i
 		this.angle+=dangle;
 	}
 }
 
-class BezierSpline {
-	constructor(points){
-		this.controlPointIds=points;//point0,point1
-		this.leverPoint=[];
-		this.width = 1;
-		this.color = '#000';
+class BezierSpline extends FigureItem{
+	constructor(ownerFigure,points){
+		super(ownerFigure);
+		this.points=points;//point0,point1
 	}
 
-	findFigure(){
-		let layers = BezierCanvas.cnv.layers;
-		console.log(layers);
-		for(let i=0; i<layers.length; i++){
-			let figures = layers[i].figures;
-			for(let j=0; j<figures.length; j++){
-				if (figures[j].splines.indexOf(this)>=0){
-					return figures[j];
-				};
-			};//j
-		};//i
-	}
 	get controlPoint(){
+		return [this.points[0], this.points[this.points.length-1]];
+	}
+	get leverPoint(){
 		let arr=[];
-		for(let i=0; i<this.controlPointIds.length; i++)
-			arr.push(this.ownFigure.points[ this.controlPointIds[i] ]);
+		for(let i=1; i<this.points.length-1; i++)
+			arr.push(this.points[i]);
 		return arr;
 	}
-	toArray(){
-		return [this.controlPoint[0],this.leverPoint[0],this.leverPoint[1],this.controlPoint[1]];
-	}
-	isNear(x,y,ownFigure=null){
-		if(!ownFigure)
-			ownFigure=this.findFigure();
-		this.ownFigure = ownFigure;
-		console.log('ownFigure=');
-		console.log(this.ownFigure);
-		let aDot = this.toArray();
-		delete this.ownFigure;
-		let oldPoint, newPoint=aDot[0];
+	isNear(x,y){
+		let oldPoint, newPoint=this.points[0];
 		let c=0;
-		for(let i=1; i<aDot.length; i++)
-			c+=aDot[i-1].distance(aDot[i].x,aDot[i].y);
+		for(let i=1; i<this.points.length; i++)
+			c+=this.points[i-1].distance(this.points[i].x,this.points[i].y);
 		c=c/5;//4
 		//=Math.hypot(aDot);//
 		for(let i=1; i<=c; i++){
 			if(distance(newPoint.x, newPoint.y, x, y)<5)
 				return true;
 			oldPoint = newPoint;
-			newPoint = findInterimBezierPoint(aDot, i/c);
+			newPoint = findInterimBezierPoint(this.points, i/c);
 		};///i++
 		return false;
 	}
 };
 
 
-/*
-function createPoint(x,y){
-	return {x:x,y:y};
-};
-
-function shiftPoint(point,dx=0,dy=0){
-	point.x+=dx;
-	point.y+=dy;
-	return point;
-};
-
-
-class BezierPoint {
-
-	constructor(x,y){
-		this.control= createPoint(x,y);
-		this.setBefore(x,y);
-		this.setAfter(x,y);
-	}
-
-	setBefore(x,y){
-		this.before= createPoint(x,y);
-	}
-
-	setAfter(x,y){
-		this.after= createPoint(x,y);
-	}
-
-	shift(dx,dy){
-		shiftPoint(this.control,dx,dy);
-		if(this.before)
-			shiftPoint(this.before,dx,dy);
-		if(this.after)
-			shiftPoint(this.after,dx,dy);		
-	}
-
-	rotate(angle){
 
 
 
-	}
+class BezierCurve extends FigureItem{
 
-
-
-};
-*/
-
-
-
-class BezierCurve{
-
-	constructor(){
-		this.splineIds=[];
+	constructor(ownerFigure){
+		super(ownerFigure);
+		this.splines=[];
 		
 	}
-	isNear(x,y,ownFigure){
+	isNear(x,y){
 		//
 	}
 };
@@ -282,20 +221,13 @@ function findInterimBezierPoint(aDot, coef){//interim point
 		return aPnt[0];
 }
 
-class BezierCanvas extends RealCanvas{
-
-	static cnv=null;
-
-	init(selector){
-		super.init(selector);
-		console.log('BezierCanvas.init('+selector+')');
+class BezierScreen{
+	constructor(canvas){
+		this.canvas=canvas;
 		console.log(this.canvas);
-		//this.points = [];
-		//this.splines = [];
 		this.content = {
 			layers : [],
 		};
-		BezierCanvas.cnv = this;
 	}
 
 
@@ -316,20 +248,14 @@ class BezierCanvas extends RealCanvas{
 				return res;
 	}
 
-	/*paintPoint(point,rgba){
+	paintPoint(point,rgba){
 			let x=Math.round(point.x);
 			let y=Math.round(point.y);
-			this.setRGB(x,y,rgba);//canvas
-		};*/
+			this.canvas.setRGB(x,y,rgba);//canvas
+	}
 
 	paintBezier(aDot, color){//PixelColor color
 
-		let cnv=this;
-		function paintPoint(point){
-			let x=Math.round(point.x);
-			let y=Math.round(point.y);
-			cnv.setRGB(x,y,rgba);
-		};
 
 
 		let rgba=Array.isArray(color)?color:color.toArray();//[128,255,224,255];
@@ -348,7 +274,7 @@ class BezierCanvas extends RealCanvas{
 			oldPoint = newPoint;
 			newPoint = findInterimBezierPoint(aDot, i/c);
 			//console.log(i );
-			paintPoint(newPoint);
+			this.paintPoint(newPoint,rgba);
 			//console.log(aPnt);
 		};///i++
 
@@ -492,7 +418,7 @@ function paintInterim(coef,x,y,dx,dy){
 	//this1.setRGB(Math.round(dx+pnt.x),Math.round(dy+pnt.y) ,[55,255,55,255]);
 	if(isNaN(x)){x=pnt.x; clr = [255,55,255,255] }
 	if(isNaN(y))y=pnt.y;
-	this1.setRGB(Math.round(dx+x),Math.round(dy+y) ,clr);
+	this1.canvas.setRGB(Math.round(dx+x),Math.round(dy+y) ,clr);
 };
 
 //for(let y=60; y<120; y++){
@@ -641,7 +567,7 @@ for(let x=0; x<1200; x++){
 		const _Top=0, _Right=1, _Bottom=2, _Left=3;
 		if(!currFigure || currFigure.curves.length!=4)return;
 		let crv = currFigure.curves;
-		if(crv[_Top].splineIds.length != crv[_Bottom].splineIds.length || crv[_Right].splineIds.length != crv[_Left].splineIds.length)return;
+		if(crv[_Top].splines.length != crv[_Bottom].splines.length || crv[_Right].splines.length != crv[_Left].splines.length)return;
 
 		let clr =  [50,50,50,255];//new PixelColor('#22ffee');
 		if(!h)h=10;
@@ -652,7 +578,7 @@ for(let x=0; x<1200; x++){
 		let aDots = new Array(4);
 
 		function getSpline(_Side,num){
-			aSplines[_Side] = currFigure.splines[ crv[_Side].splineIds[num] ];
+			aSplines[_Side] = crv[_Side].splines[num];//currFigure.splines[ crv[_Side].splineIds[num] ];
 			aSplines[_Side].ownFigure = currFigure;
 			aDots[_Side] = aSplines[_Side].toArray();
 			//return [spline, spline.toArray()];
@@ -751,6 +677,6 @@ for(let x=0; x<1200; x++){
 };
 
 
-export { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierLayer, BezierCanvas };
+export { Point, Rotor, BezierSpline, BezierCurve, BezierFigure, BezierLayer, BezierScreen };
 
 

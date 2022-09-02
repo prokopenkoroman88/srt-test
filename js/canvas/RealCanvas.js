@@ -82,4 +82,61 @@ export default class RealCanvas extends CustomCanvas{
 	}
 
 
+
+	moveTo(p){
+		this.ctx.beginPath();
+		this.ctx.moveTo(p.x, p.y);
+	}
+
+	lineTo(p, lineColor='black'){
+		this.ctx.lineTo(p.x, p.y);
+		this.stroke({style:lineColor});
+	}//paintStandardLine
+
+	curveTo(args, lineColor='black'){
+		this.ctx.bezierCurveTo(args[0].x, args[0].y,  args[1].x, args[1].y,   args[2].x, args[2].y  );
+		this.stroke({style:lineColor});
+	}//paintStandardCurve
+
+	stroke(obj){
+		let _strokeStyle=this.ctx.strokeStyle;
+		this.ctx.strokeStyle = obj.style;//lineColor;
+		this.ctx.stroke();
+		this.ctx.strokeStyle=_strokeStyle;
+	}
+
+	fill(color){
+		this.ctx.fillStyle=color;//'rgb(255,255,0)';
+		this.ctx.fill();
+	}
+
+	circle(p, radius, lineColor='black'){
+		this.ctx.beginPath();
+		this.ctx.arc(p.x,p.y, radius, 0, Math.PI*2, true);
+		this.stroke({style:lineColor});
+	}
+
+
+
+
+	paintStandardLine(p0, p1, lineColor='black'){
+		this.moveTo(p0);
+		this.lineTo(p1, lineColor);
+	}
+
+	startStandardCurve(p){
+		this.moveTo(p);
+	}
+
+
+	paintStandardCurve(args, lineColor='black'){
+		this.curveTo(args, lineColor);
+	}
+
+	paintStandardCircle(p,radius){
+		this.ctx.beginPath();
+		this.ctx.arc(p.x,p.y, radius, 0, Math.PI*2, true);
+		this.ctx.stroke();
+	}
+
 }
