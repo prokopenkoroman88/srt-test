@@ -46,6 +46,12 @@ export default class CustomEditor{
 	addOnClick(btnName,func){
 		this[btnName].currHTMLTag.addEventListener('click', func.bind(this));
 	}
+	addOnMouseDown(btnName,func){
+		this[btnName].currHTMLTag.addEventListener('mousedown', func.bind(this));
+	}
+	addOnMouseUp(btnName,func){
+		this[btnName].currHTMLTag.addEventListener('mouseup', func.bind(this));
+	}
 
 	addOnInput(inpName,func){
 		this[inpName].currHTMLTag.addEventListener('input', (()=>{func.bind(this)(this[inpName].currHTMLTag.value)}).bind(this));

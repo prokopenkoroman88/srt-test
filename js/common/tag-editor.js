@@ -78,6 +78,10 @@ export default class Tag {
 		return this;
 	}
 
+	event(type,func){
+		this.last.currHTMLTag.addEventListener(type, func);
+		return this;
+	}
 
 	// return boolean!!!!!!!!
 	isTag(tagName){
@@ -98,6 +102,15 @@ export default class Tag {
 	h2(css=''){
 		return this.tag('h2',css);
 	}
+	h(num, css=''){
+		return this.tag('h'+num,css);
+	}
+	p(css=''){
+		return this.tag('p',css);
+	}
+	span(css=''){
+		return this.tag('span',css);
+	}
 
 	button(css=''){
 		return this.tag('button',css);
@@ -112,6 +125,15 @@ export default class Tag {
 	}
 
 
+	ul(css=''){
+		return this.tag('ul',css);
+	}
+	ol(css=''){
+		return this.tag('ol',css);
+	}
+	li(css=''){
+		return this.tag('li',css);
+	}
 
 
 

@@ -8,26 +8,8 @@ const modeArrow=0, modeAddLayer=1, modeAddFigure=2, modeAddCurve=3, modeAddRotor
 
 export default class BezierEditor extends CustomEditor{
 
-/*
-	static editor=null;
-	constructor(selector, canvasSelector){
-		if(BezierEditor.editor){
-			//class??//Error '';
-			return BezierEditor.editor;
-		};
-		BezierEditor.editor = this;
-		//BezierCanvas.cnv = this.canvas;
-		
-		//super();
-		let topPanel = document.querySelector(selector);
-		this.root = new Tag(this,topPanel);
-		this.initPanel();
-
-		this.canvas = new BezierCanvas(canvasSelector);
-		this.initCanvas();
-*/
 	static get modeArrow(){ return modeArrow; }
-	static get modeAddLayer(){ return modAddLayer; }
+	static get modeAddLayer(){ return modeAddLayer; }
 	static get modeAddFigure(){ return modeAddFigure; }
 	static get modeAddCurve(){ return modeAddCurve; }
 	static get modeAddRotor(){ return modeAddRotor; }
@@ -35,10 +17,13 @@ export default class BezierEditor extends CustomEditor{
 
 	init(){
 		super.init();
-		//this.canvas = new BezierCanvas(canvasSelector);
-		//this.canvas => this.screen !!!!
 		this.screen = new BezierScreen(this.canvas);
-		this.mode=modeArrow;
+		this.mode=BezierEditor.modeArrow;
+		this.clear_curr();
+		this.createNew();
+	}
+
+	clear_curr(){
 		this.iter=0;
 		this.args=[{},{},{}];
 		this.currPoint=null;
@@ -47,13 +32,12 @@ export default class BezierEditor extends CustomEditor{
 		this.currCurve=null;
 		this.currFigure=null;
 		this.currLayer=null;
-		this.createNew();
 	}
 
 	initPanel(){
 		this.root
 		.div('btns')
-		  .dn()
+		.dn()
 			.button('active').inner('Arrow').assignTo('btnArrow')
 			.button('').inner('AddLayer').assignTo('btnAddLayer')
 			.button('').inner('AddFigure').assignTo('btnAddFigure')
@@ -64,14 +48,9 @@ export default class BezierEditor extends CustomEditor{
 			.button('').inner('Fill').assignTo('btnFill')
 			.button('').inner('SAVE').assignTo('btnSave')
 			.button('').inner('LOAD').assignTo('btnLoad')
-		  .up()
-		.div('bezier-list')
-		  .dn()
-			.tag('ul').assignTo('ulLayer')
-			  .dn()
-				.tag('li').inner('add layer').assignTo('btnAddLayer2')
-			  .up()
-		  .up();
+		.up()
+		.div('bezier').assignTo('barContent');
+		this.add_li_content();
 
 		this.addOnClick('btnArrow', function(){
 			this.mode=BezierEditor.modeArrow;
@@ -126,7 +105,34 @@ export default class BezierEditor extends CustomEditor{
 			}, 100);
 		});
 
-		this.addOnClick('ulLayer', function(event){
+		this.addOnMouseDown('barContent', function(event){
+			let tagName = event.target.tagName.toLowerCase();
+			if(tagName=='button')
+				return;
+
+			if(this.curr_li)
+				this.curr_li.classList.toggle('active');
+
+			let ids=this.get_element_ids(event.target);
+			this.curr_li = this.get_li(ids);
+			if(this.curr_li)
+				this.curr_li.classList.toggle('active');//Перенос свойства активности
+
+			this.set_curr(ids);
+			if(this.curr_li.classList.contains('add')){//Создать новые:
+				if(this.curr_li.classList.contains('layer'))
+					this.addLayer();
+				if(this.curr_li.classList.contains('figure'))
+					this.addFigure();
+			};
+			this.refresh();
+		});
+
+		this.addOnMouseUp('barContent', function(event){
+			let ids=this.get_element_ids(event.target);
+		});
+
+		this.addOnClick('barContent', function(event){
 				console.log(event.target);
 		});
 	}
@@ -196,25 +202,9 @@ export default class BezierEditor extends CustomEditor{
 
 	}
 
-	/*initCanvas(){
-		this.canvas.canvas.addEventListener('mousemove', function(event){
-			this.onMouse(event,CustomEditor.mouseMv);
-		});
-		this.canvas.canvas.addEventListener('mousedown', function(event){
-			this.onMouse(event,CustomEditor.mouseDn);
-		});
-		this.canvas.canvas.addEventListener('mouseup', function(event){
-			this.onMouse(event,CustomEditor.mouseUp);
-		});
-	}*/
 
 	createNew(){
 		this.screen.content.layers=[];
-		//this.currLayer = new BezierLayer();
-		//this.canvas.content.layers.push(this.currLayer);
-		//
-		//this.currFigure = new BezierFigure();
-		//this.currLayer.figures.push(this.currFigure);
 		this.addLayer();
 		this.addFigure();
 	}
@@ -280,6 +270,7 @@ export default class BezierEditor extends CustomEditor{
 	addPoint(x,y){
 		this.currPoint = new Point(this.currFigure, x,y);
 		this.currFigure.points.push(this.currPoint);//canvas
+		this.add_li_point();
 		return this.currPoint;
 	}
 
@@ -289,6 +280,7 @@ export default class BezierEditor extends CustomEditor{
 		let cRotor = this.currFigure.rotors.push(this.currRotor);//canvas
 		console.log('cRotor=',cRotor);
 		console.log(this.currRotor);
+		this.add_li_rotor();
 		return this.currRotor;
 	}
 
@@ -298,31 +290,23 @@ export default class BezierEditor extends CustomEditor{
 		let lever2 = this.addPoint(args[1].x, args[1].y);
 		let newPoint = this.addPoint(args[2].x, args[2].y);
 
-		//this.currSpline = new BezierSpline([this.currFigure.points.indexOf(oldPoint), this.currFigure.points.indexOf(newPoint)]);//newPoint==this.currPoint
 		this.currSpline = new BezierSpline(this.currFigure, [oldPoint, lever1, lever2, newPoint]);//newPoint==this.currPoint
 		let iSpline = this.currFigure.splines.push(this.currSpline)-1;//canvas
 		if(this.currCurve)
-			//this.currCurve.splineIds.push(iSpline);
 			this.currCurve.splines.push(this.currSpline);
-
-		//this.currSpline.leverPoint.push( new Point(args[0].x, args[0].y) );//after
-		//this.currSpline.leverPoint.push( new Point(args[1].x, args[1].y) );//before
+		this.add_li_spline();
 		return this.currSpline;
 	}
 
 	addCurve(){
-		this.currCurve = new BezierCurve();
+		this.currCurve = new BezierCurve(this.currFigure);
 		if(!this.currFigure){
 			if(!this.currLayer)
 				this.currLayer = this.screen.content.layers[0];
 			this.currFigure = this.currLayer.figures[0];
 		};
 		this.currFigure.curves.push(this.currCurve);
-		let li = document.createElement('li');
-		li.innerHTML = 'Curve №'+this.currFigure.curves.indexOf(this.currCurve);
-		let iLayer = this.screen.content.layers.indexOf(this.currLayer);
-		let iFigure = this.currLayer.figures.indexOf(this.currFigure);
-		this.ulLayer.currHTMLTag.children[iLayer].children[0].children[iFigure].children[0].lastElementChild.before(li);
+		this.add_li_curve();
 		return this.currCurve;
 	}
 
@@ -331,31 +315,227 @@ export default class BezierEditor extends CustomEditor{
 		if(!this.currLayer)
 			this.currLayer = this.screen.content.layers[0];
 		this.currLayer.figures.push(this.currFigure);
-		let li = document.createElement('li');
-		li.innerHTML = 'Figure №'+this.currLayer.figures.indexOf(this.currFigure);
-		let ul = document.createElement('ul');
-		let liNew = document.createElement('li');
-		liNew.innerHTML='add curve'
-		ul.append(liNew);
-		li.append(ul);
-		let iLayer = this.screen.content.layers.indexOf(this.currLayer);
-		if(iLayer<0)iLayer=0;
-		this.ulLayer.currHTMLTag.children[iLayer].children[0].lastElementChild.before(li);
+		this.add_li_figure();
 		return this.currFigure;
 	}
 
 	addLayer(){
 		this.currLayer = new BezierLayer();
 		this.screen.content.layers.push(this.currLayer);
-		let li = document.createElement('li');
-		li.innerHTML = 'Layer №'+this.screen.content.layers.indexOf(this.currLayer);
-		let ul = document.createElement('ul');
-		let liNew = document.createElement('li');
-		liNew.innerHTML='add figure'
-		ul.append(liNew);
-		li.append(ul);
-		this.ulLayer.currHTMLTag.lastElementChild.before(li);
+		this.add_li_layer();
 		return this.currLayer;
+	}
+
+
+	get_element_ids(element){//event.target
+		let ids=[];
+		while (element && !element.classList.contains('bezier')){//'content' 'layers'
+			let parent = element.parentNode;
+			if(!parent)break;
+			let id = Array.from(parent.children).indexOf(element);
+			ids.unshift(id);
+			element = parent;
+		};
+		return ids;
+	}
+
+	find_li(pathIds){
+		let ids=this.compile_path_ids(pathIds);
+		return this.get_li(ids);
+	}
+
+	compile_path_ids(pathIds){
+		let iLayer = pathIds.layer??-1;
+		let iFigure = pathIds.figure??-1;
+		let iCurve = pathIds.curve??-1;
+		let iSpline = pathIds.spline??-1;
+		let iPoint = pathIds.point??-1;
+		let iRotor = pathIds.rotor??-1;
+		let iRotorPoint = -1;
+
+		let ids=[0,0,1];//начиная от div.bezier
+		if(iLayer>=0){
+			ids.push(iLayer);
+			if(iFigure>=0){
+				ids.push(0+1,iFigure);
+				if(iCurve>=0){
+					ids.push(0+1,0,0,iCurve);
+				};//curve
+				if(iSpline>=0){
+					ids.push(0+1,1,0,iSpline);
+				};//spline
+				if(iPoint>=0){
+					ids.push(0+1,2,0,iPoint);
+				};//Point
+				if(iRotor>=0){
+					ids.push(0+1,3,0,iRotor);
+					if(iRotorPoint>=0){
+						ids.push(0,iRotorPoint);
+					};
+				};//Rotor
+			};//figure
+		};//layer
+		return ids;
+	}
+
+	get_li(ids){
+		let currTag = this.barContent.currHTMLTag;
+		ids.forEach( function(id) {
+			currTag = currTag.children[id];
+		});
+		return currTag;
+	}
+
+	set_curr(ids){
+		this.clear_curr();
+		if(ids.length<=3)return;
+		this.currLayer = this.screen.content.layers[ids[3]];
+		if(ids.length<=5)return;
+		this.currFigure = this.currLayer.figures[ids[5]];
+		if(ids.length<=9)return;
+		switch (ids[7]) {
+			case 0: this.currCurve = this.currFigure.curves[ids[9]]; break;
+			case 1: this.currSpline = this.currFigure.splines[ids[9]]; break;
+			case 2: this.currPoint = this.currFigure.points[ids[9]]; break;
+			case 3: this.currRotor = this.currFigure.rotors[ids[9]]; break;
+		};
+	}
+
+	add_li_point(){
+		this.add_li('point', function(newTag, pathIds){
+			newTag.li('point').inner(pathIds.point+' ('+this.currPoint.x+','+this.currPoint.y+')');
+		}.bind(this));
+	}
+
+	add_li_rotor(){
+		this.add_li('rotor', function(newTag, pathIds){
+			newTag.li('rotor').inner('rotor №'+pathIds.rotor);
+		}.bind(this));
+	}
+
+	add_li_spline(){
+		this.add_li('spline', function(newTag, pathIds){
+			newTag.li('spline').inner('spline №'+pathIds.spline);
+		}.bind(this));
+	}
+
+	add_li_curve(){
+		this.add_li('curve', function(newTag, pathIds){
+			newTag.li('curve').inner('Curve №'+pathIds.curve);
+		});
+	}
+
+
+	add_li_figure(){
+		this.add_li('figure', function(newTag, pathIds){
+			newTag.li('figure')
+			.dn()
+				.h(3)
+				.dn()
+					.button('wrapper').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Figure №'+pathIds.figure)
+				.up()
+				.ul('')
+				.dn()
+					.li('curves').inner('curves')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add curve').inner('add curve')
+						.up()
+					.up()
+					.li('splines').inner('splines')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add spline').inner('add spline')
+						.up()
+					.up()
+					.li('points').inner('points')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add point').inner('add point')
+						.up()
+					.up()
+					.li('rotors').inner('rotors')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add rotor').inner('add rotor')
+						.up()
+					.up()
+				.up()
+			.up();
+		}.bind(this));
+	}
+
+	add_li_layer(){
+		this.add_li('layer', function(newTag, pathIds){
+			newTag.li('layer')
+			.dn()
+				.h(3)
+				.dn()
+					.button('wrapper').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Layer №'+pathIds.layer)
+				.up()
+				.ul('')
+				.dn()
+					.li('add figure').inner('add figure')
+				.up()
+			.up();
+		});
+	}
+
+	add_li_content(){
+		this.add_li('content', function(newTag, pathIds){
+			newTag.ul('')
+			.dn()
+				.li('content')
+				.dn()
+					.h(2)
+					.dn()
+						.button('wrapper').event('click', function(){
+							this.parentNode.parentNode.classList.toggle('closed');
+						})
+						.span('').inner('Content tree')
+					.up()
+					.ul('layers')
+					.dn()
+						.li('add layer').inner('add layer')
+					.up()
+				.up()
+			.up();
+		});
+	}
+
+	add_li(type, tagAddFunc){
+		let pathIds = {};
+		if(['layer','figure','curve','spline','point','rotor'].indexOf(type)>=0 )
+			pathIds.layer = this.screen.content.layers.indexOf(this.currLayer);
+		if(['figure','curve','spline','point','rotor'].indexOf(type)>=0 )
+			pathIds.figure = this.currLayer.figures.indexOf(this.currFigure);
+		switch (type) {
+			case 'curve': pathIds.curve = this.currCurve.index; break;
+			case 'spline': pathIds.spline = this.currSpline.index; break;
+			case 'point': pathIds.point = this.currPoint.index; break;
+			case 'rotor': pathIds.rotor = this.currRotor.index; break;
+		};
+		let tag, newTag;
+		if(type=='content'){
+			newTag=this.barContent;
+			tagAddFunc(newTag, pathIds);//Добавляется новый li
+		}
+		else{//для вложений
+			tag = this.find_li(pathIds);//для новых элементов tag - кнопка создания нового
+			newTag = new Tag(this,tag.parentNode);
+			tagAddFunc(newTag, pathIds);//Добавляется новый li
+			tag.before(newTag.last.currHTMLTag);
+		};
 	}
 
 	onMouse(event,kak){
@@ -390,7 +570,6 @@ export default class BezierEditor extends CustomEditor{
 							bNeedShift=(this.currFigure!=rotorFigure || iPoint<0);//точку нужно переместить или подчинить ротору
 							if(!bNeedShift){
 								this.currRotor = rotorFigure.rotors[pathIds.rotor];
-								//this.currRotor.pointIds.push(iPoint);
 								this.currRotor.points.push(this.currPoint);
 							};
 						};
@@ -419,7 +598,7 @@ export default class BezierEditor extends CustomEditor{
 			}; break;
 			case modeAddFigure:
 			{
-				if(kak==mouseDn){
+				if(kak==CustomEditor.mouseDn){
 					//????????????
 				};
 			}; break;
@@ -535,8 +714,11 @@ layer objects:[]
 
 			if(this.currRotor)
 				this.currRotor.rotate(0.2,this.currFigure);//udali
-			this.ulLayer.currHTMLTag.children[iLayer].classList.toggle('active');
-			this.ulLayer.currHTMLTag.children[iLayer].children[0].children[iFigure].classList.toggle('active');
+			if(this.curr_li)
+				this.curr_li.classList.toggle('active');
+			this.curr_li = this.find_li(pathIds);
+			if(this.curr_li)
+				this.curr_li.classList.toggle('active');//Перенос свойства активности
 		};
 		this.refresh();
 	}
@@ -602,26 +784,11 @@ layer objects:[]
 		this.canvas.circle(spline.leverPoint[1], 5);
 
 		if(!figure)return;
-		//let controlPoint = spline.controlPointIds.map((pointId)=>figure.points[pointId] , this);
 		spline.controlPoint.forEach((cp,i)=>{
 			this.canvas.circle(cp, 5);
 			this.canvas.moveTo(cp);
 			this.canvas.lineTo(spline.leverPoint[i], 'blue');
 		});
-
-/*
-
-				controlPoint[0] = figure.points[ spline.controlPointIds[0] ];
-				controlPoint[1] = figure.points[ spline.controlPointIds[1] ];
-				this.canvas.circle(controlPoint[0], 5);
-				this.canvas.circle(controlPoint[1], 5);
-				this.paintStandardLine(controlPoint[0], spline.leverPoint[0], 'blue');
-				this.paintStandardLine(controlPoint[1], spline.leverPoint[1], 'blue');
-*/
-
-
-						//this.refresh();
-
 	}
 
 
@@ -647,46 +814,6 @@ layer objects:[]
 		this.paintPoint(this.currPoint);
 		this.paintRotorLever(this.currRotor);
 		this.paintSplineLevers(this.currSpline,this.currFigure);
-/*
-
-					if(this.currPoint){
-						this.paintStandardCircle(this.currPoint, 5);
-					};
-		if(this.currRotor){
-			let rotorLever = {};
-			rotorLever.x = this.currRotor.x + Math.sin(this.currRotor.angle)*50;
-			rotorLever.y = this.currRotor.y - Math.cos(this.currRotor.angle)*50;
-			this.paintStandardCircle(this.currRotor, 5);
-			this.paintStandardCircle(rotorLever, 5);
-			this.paintStandardLine(this.currRotor, rotorLever, 'red');
-		};
-		if(this.currSpline){
-
-//					console.log('Point[].x,y=',this.currPoint.x, this.currPoint.y);
-			if(this.currFigure){
-				let controlPoint = new Array(2);
-				controlPoint[0] = this.currFigure.points[ this.currSpline.controlPointIds[0] ];
-				controlPoint[1] = this.currFigure.points[ this.currSpline.controlPointIds[1] ];
-				this.paintStandardCircle(controlPoint[0], 5);
-				this.paintStandardCircle(controlPoint[1], 5);
-				this.paintStandardLine(controlPoint[0], this.currSpline.leverPoint[0], 'blue');
-				this.paintStandardLine(controlPoint[1], this.currSpline.leverPoint[1], 'blue');
-			};
-
-						this.paintStandardCircle(this.currSpline.leverPoint[0], 5);
-						this.paintStandardCircle(this.currSpline.leverPoint[1], 5);
-						//this.refresh();
-
-		};*/
-
-		//let tf = new TriangleFiller(this.canvas);
-		//tf.testInit();
-		//tf.render();
-
-		/*let screen = new TestScreen(32*10,32*10);//h,w SpatialScreen
-		let render = new SpatialRender(screen,this.canvas);
-		screen.init();
-		render.render();*/
 
 		//this.canvas.put();
 		this.canvas.refreshImageData();

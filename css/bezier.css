@@ -1,0 +1,116 @@
+.bezier{
+	position: fixed;
+	top: 100px;
+	right: 100px;
+	width: 600px;
+	border: 1px outset #aaa;
+}
+
+.bezier h2, .bezier h3, .bezier h4{
+	margin-top: 2px;
+	margin-bottom: 0;
+} 
+
+.bezier li{/*.outset{*/
+	border:1px solid gray;
+	border-left-color: white;
+	border-top-color: white;
+}
+
+.bezier ul{/*.inset{*/
+	border:1px solid gray;
+	border-right-color: white;
+	border-bottom-color: white;
+}
+.bezier ul{
+	padding-left: 0px;
+	margin-left: 20px;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+	list-style: none;
+}
+
+.bezier .active{
+	color: red;
+}
+
+.bezier>ul{
+	padding-left: 0px;
+	margin: 0px;
+	border:none;
+}
+
+.bezier .content{
+	background-color: #aaa;
+	width: calc(100% - 2px);
+}
+
+.bezier .content>ul{
+	max-height: 650px;
+	overflow-y: scroll;
+}
+
+.bezier .layer{
+	background-color: #bbb;
+	width: calc(100% - 4px);
+}
+
+.bezier .layer>ul{
+	max-height: 450px;
+	overflow-y: scroll;
+}
+
+.bezier .figure{
+	background-color: #ccc;
+	width: calc(100% - 4px);
+}
+
+.bezier .figure ul{
+	margin-left: 0px;
+	padding-left: 0px;
+}
+
+.bezier .figure>ul>li{
+	display: inline-block;
+	vertical-align: top;
+	width: calc(25% - 2px);
+	background-color: #ddd;
+}
+
+.bezier .figure>ul>li>ul{
+	max-height: 150px;
+	overflow-y: scroll;
+}
+
+
+/* ========== Wrapper ========== */
+
+.bezier li.closed ul{
+	display: none;
+}
+
+.bezier button.wrapper{
+	display: inline-block;
+	height: 12px;
+	width: 12px;
+	margin: 0px 5px;
+}
+
+.bezier button.wrapper:before{
+	display: block;
+	height: 10px;
+	width: 10px;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	left: -5px;
+	top: -5px;
+}
+
+.bezier :not(li.closed) button.wrapper:before{
+	content: '-';/*▫*/
+}
+
+.bezier li.closed button.wrapper:before{
+	content: '□';
+}

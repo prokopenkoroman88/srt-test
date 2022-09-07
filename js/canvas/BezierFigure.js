@@ -28,12 +28,15 @@ function distance(x0,y0,x1,y1){
 }
 
 class FigureItem{
+	get array(){ return ''; }
+	get index(){ return this.ownFigure[this.array].indexOf(this); }
 	constructor(ownerFigure){
 		this.ownFigure=ownerFigure;
 	}
 }
 
 class Point extends FigureItem{
+	get array(){ return 'points'; }
 	constructor(ownerFigure,x,y){
 		super(ownerFigure);
 		this.x = x;
@@ -54,6 +57,7 @@ class Point extends FigureItem{
 };
 
 class Rotor extends Point {
+	get array(){ return 'rotors'; }
 	constructor(ownerFigure,x,y,angle=0){
 		super(ownerFigure,x,y);
 		this.angle = angle;
@@ -78,6 +82,7 @@ class Rotor extends Point {
 }
 
 class BezierSpline extends FigureItem{
+	get array(){ return 'splines'; }
 	constructor(ownerFigure,points){
 		super(ownerFigure);
 		this.points=points;//point0,point1
@@ -114,7 +119,7 @@ class BezierSpline extends FigureItem{
 
 
 class BezierCurve extends FigureItem{
-
+	get array(){ return 'curves'; }
 	constructor(ownerFigure){
 		super(ownerFigure);
 		this.splines=[];
