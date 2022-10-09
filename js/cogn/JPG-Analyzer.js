@@ -8,7 +8,7 @@ import PixelGradient from './../canvas/PixelGradient.js';
 import { PixelVector } from './PixelVector.js';
 
 import AreaTree from './../canvas/AreaTree.js';
-import ColorArea from './ColorArea.js';
+//import ColorArea from './ColorArea.js';
 
 
 
@@ -678,95 +678,6 @@ class JPGAnalyzer extends RealCanvas{
 
 
 
-	by3Colors(){//+25.1.22
-
-		let treeGray,treeRed,treeBlue;
-		treeGray = new AreaTree();
-		treeRed = new AreaTree();
-		treeBlue = new AreaTree();
-
-
-
-		let rgba=[0,0,0,0];
-		let iClr;
-		
-		for(let i=0; i</*10*/this.h; i++){
-		//for(let i=190-40; i<200; i++){
-
-
-			for(let j=0; j</*10*/this.w; j++){
-
-				iClr=0;
-				rgba=this.getRGB(this.x0+j, this.y0+i);
-
-
-
-				if( rgba[0]>=25 && rgba[0]<=75 && rgba[1]>=25 && rgba[1]<=70 && rgba[2]>=25 && rgba[2]<=70 
-
-				  &&  Math.abs(rgba[0]-rgba[1])<15  &&  Math.abs(rgba[1]-rgba[2])<15  &&  Math.abs(rgba[2]-rgba[0])<15    
-
-
-				  ){
-					if(rgba[0]==rgba[1] && rgba[1]==rgba[2] ){
-						iClr=1;
-						treeGray.addPoint(j,i);
-					}
-					else{
-						if(rgba[0]>rgba[1] && rgba[0]>rgba[2]){
-							iClr=2;
-							treeRed.addPoint(j,i);
-						};
-						if(rgba[2]>rgba[1] && rgba[2]>rgba[0]){
-							iClr=3;
-							treeBlue.addPoint(j,i);
-						};
-					};
-				};
-/*
-				if(iClr==1)rgba=[50,50,50,255];
-				if(iClr==2)rgba=[150,50,50,255];
-				if(iClr==3)rgba=[50,50,150,255];
-
-				if(iClr>0)
-					this.setRGB(this.x1+j, this.y1+i, rgba);
-*/
-			};//j
-
-		};//i
-
-
-		let treeMaroon = new AreaTree();
-		treeMaroon.addArea( treeGray );
-		treeMaroon.addArea( treeRed );
-
-
-
-		for(let i=0; i</*10*/this.h; i++){
-		//for(let i=190-40; i<200; i++){
-
-
-			for(let j=0; j</*10*/this.w; j++){
-				iClr=0;
-//				if(treeGray.hasPoint(j,i)) iClr=1;
-//				if(treeRed.hasPoint(j,i)) iClr=2;
-				if(treeBlue.hasPoint(j,i)) iClr=3;
-				if(treeMaroon.hasPoint(j,i)) iClr=4;
-
-				if(iClr==1)rgba=[50,50,50,255];
-				if(iClr==2)rgba=[150,50,50,255];
-				if(iClr==3)rgba=[50,50,150,255];
-				if(iClr==4)rgba=[100,50,50,255];
-
-				if(iClr>0)
-					this.setRGB(this.x1+j, this.y1+i, rgba);
-
-
-			};//j
-
-		};//i
-
-
-	}//by3Colors
 
 	byClasters(){
 
@@ -784,7 +695,7 @@ class JPGAnalyzer extends RealCanvas{
 
 
 		
-		for(let i=0; i</*10*/this.h; i++){
+//		for(let i=0; i</*10*/this.h; i++){
 		//for(let i=190-40; i<200; i++){
 
 /*
@@ -799,12 +710,12 @@ class JPGAnalyzer extends RealCanvas{
 				};//j1
 			};//i1
 */
-			pixelVector.init(this.x0-1,this.y0+i);
+//			pixelVector.init(this.x0-1,this.y0+i);
 
-			for(let j=0; j</*10*/this.w; j++){
+//			for(let j=0; j</*10*/this.w; j++){
 
 
-				pixelVector.nextStep();
+//				pixelVector.nextStep();
 /*
 				//a9Pxl:
 				for(let i1=0; i1<=2; i1++){
@@ -816,6 +727,7 @@ class JPGAnalyzer extends RealCanvas{
 					a9Pxl[i1][2] = new PixelColor(rgba);
 				};//i1
 */
+/*
 
 				iClr=0;
 				rgba = pixelVector.getRGB(0,0);//a9Pxl[1][1].toArray();//rgba = this.getRGB(this.x0+j, this.y0+i);
@@ -868,6 +780,7 @@ class JPGAnalyzer extends RealCanvas{
 		console.log('2aReadyAreas.length='+aReadyAreas.length);//16000 46000
 
 		let cArea=aReadyAreas.length;
+*/
 /*
 		for(let iArea=cArea-1; iArea>=0; iArea--){
 			//

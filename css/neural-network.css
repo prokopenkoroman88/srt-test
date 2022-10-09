@@ -1,0 +1,200 @@
+html, body{
+	margin: 0px;
+	padding: 0px;
+}
+
+
+ul {
+    list-style-type: none;
+    margin-left: 100px;
+}
+
+
+ul li{
+	width:80px;
+	height: 35px;
+	background-color: #0088aa;
+	opacity: 0.7;
+	/*border:1px solid blue;*/
+	position: relative;
+	margin-top: 10px;
+
+	transform-origin: top left;
+}
+
+
+ul li:before, ul li:after{
+	content: '';
+	display: block;
+	position: absolute;
+	background-color: #0088aa;
+	/*opacity: 0.38;*/
+	/*border:1px solid blue;*/
+	transform-origin: top left;
+}
+
+ul li:before{
+	opacity: 0.8;
+	width: 80px;
+	height: 21px;
+	/*right: 20px;*/
+}
+
+ul li:after{
+	opacity: 0.9;
+	width: 30px;
+	height: 35px;
+/*	left: 0px;*/
+}
+
+
+
+/* ====================== */
+
+
+ul li{
+	transform: skewY(-25deg);
+
+}
+
+ul li:before{
+/*transform: skewY(35deg) translateX(-100%);    sleva!!!! ))))) */
+	/*transform: skewX(55deg) rotate(-90deg);*/
+	transform: skewX(55deg) translateX(100%) rotate(180deg) ;
+}
+
+ul li:after{
+
+	transform: skewY(35deg) translateX(-100%);
+/*
+
+	transform-origin: left -100%;
+	transform: scaleY(1);
+
+
+	transform: skewX(55deg) translate(48px, -32px) rotate(-90deg);
+*/
+}
+
+
+/*
+
+
+
+
+
+ul {
+    list-style-type: none;
+    margin-left: 100px;
+}
+
+
+ul li{
+	width:80px;
+	height: 35px;
+	background-color: #0088aa;
+	opacity: 0.7;
+	/ *border:1px solid blue;* /
+	position: relative;
+	margin-top: 10px;
+
+	transform-origin: top left;
+}
+
+
+ul li:before, ul li:after{
+	content: '';
+	display: block;
+	position: absolute;
+	background-color: #0088aa;
+	/ *border:1px solid blue;* /
+	transform-origin: top left;
+}
+
+ul li:before{
+	opacity: 0.8;
+	width: 21px;
+	height: 80px;
+}
+
+ul li:after{
+	opacity: 0.9;
+	width: 30px;
+	height: 35px;
+}
+
+
+
+/ * ====================== * /
+
+
+ul li{
+	transform: skewY(-15deg);
+
+}
+
+ul li:before{
+/ *transform: skewY(35deg) translateX(-100%);    sleva!!!! ))))) * /
+	transform: skewX(55deg) rotate(-90deg);
+}
+
+ul li:after{
+
+	transform: skewY(35deg) translate(-100%, 0) rotate(0deg);
+
+}
+
+
+
+*/
+
+
+
+
+
+
+
+/*
+
+ul li{
+	width:50px;
+	height: 30px;
+	background-color: #0088aa;
+	transform: skewY(-15deg);
+	border:1px solid blue;
+	position: relative;
+	margin-top: 30px;
+	
+}
+
+ul li:before{
+	content: '';
+	display: block;
+	width: 20px;
+	height: 30px;
+	transform-origin: top right;
+	transform: skewY(35deg);
+	position: relative;
+	right: 20px;
+	
+	background-color: #0088aa;
+	border:1px solid blue;
+}
+
+ul li:after{
+	content: '';
+	display: block;
+	width: 15px;
+	height: 47px;
+	transform-origin: top left;
+	transform: skewX(55deg) translate(48px, -32px) rotate(-90deg);
+	position: relative;
+	left: 0px;
+	
+	background-color: #0088aa;
+	border:1px solid blue;
+}
+
+*/
+
+

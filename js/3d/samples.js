@@ -138,12 +138,12 @@ export class TestScreen extends SpatialScreen{
 		super.init();
 		let body = new SpatialBody({x:0,y:0,z:0},'house');
 		this.bodies.push(body);
-		//body.figures.push(this.cube());
+		body.figures.push(this.cube());//?
 		body.figures.push(this.stone());
 	}
 
 	cube(){
-		let cube = new SpatialCube({x:100,y:-400,z:0},'box');
+		let cube = new SpatialCube({x:700,y:-400,z:1000},'box');
 		cube.resize({x:600, y:800, z:400});
 		cube.rotate({a:Math.PI/8, b:Math.PI*0, c:0}); //Math.PI/4
 		//body.figures.push(cube);

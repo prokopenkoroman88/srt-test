@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Neural network</title>
+	<link rel="stylesheet" href="./../css/neural-network.css">
+	<link rel="stylesheet" href="./../css/cubes.css">
+</head>
+<body>
+	<br>
+	<br>
+	<br>
+	<!-- .space>.cube>div*6 -->
+	<div class="space">
+
+
+
+
+		<div class="cube rainbow0" style="--w:190px; --l:230px; --h:340px; --clr:#008877; 
+
+	transform: translateX(150px) translateY(150px) translateZ(0px);
+		">
+			<div><br>red</div>
+			<div><br>green</div>
+			<div><br>blue</div>
+			<div><br>magento</div>
+			<div><br>yellow</div>
+			<div><br>cyan</div>
+		</div>
+
+
+		<div class="cube rainbow0" style="--w:190px; --l:270px; --h:40px; --clr:#880077; 
+
+	transform: translateX(150px) translateY(150px) translateZ(-340px);
+		">
+			<div><br>red</div>
+			<div><br>green</div>
+			<div><br>blue</div>
+			<div><br>magento</div>
+			<div><br>yellow</div>
+			<div><br>cyan</div>
+		</div>
+
+
+	</div>
+
+
+	<br>
+	<br>
+	<br>
+	<ul class="network">
+		<li></li>
+		<li></li>
+		<li></li>
+		<li></li>
+	</ul>
+<script>
+
+class Test{
+	constructor(){
+		this.a=['a','b','c'];
+	}
+	get arr(){//Uncaught SyntaxError: Getter must not have any formal parameters.
+		return this.a[0];
+	}
+}
+
+let t = new Test();
+console.log(t.arr);
+
+
+</script>
+</body>
+</html>

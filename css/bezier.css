@@ -1,9 +1,10 @@
 .bezier{
-	position: fixed;
+	position: absolute;/*fixed;*/
 	top: 100px;
-	right: 100px;
+	left: 500px;/*right: 100px;*/
 	width: 600px;
 	border: 1px outset #aaa;
+	-webkit-user-select: none;
 }
 
 .bezier h2, .bezier h3, .bezier h4{
@@ -43,6 +44,14 @@
 .bezier .content{
 	background-color: #aaa;
 	width: calc(100% - 2px);
+}
+
+.bezier .content>h2{
+	cursor: move;
+}
+
+.bezier .content>h2 *{
+	cursor: auto;
 }
 
 .bezier .content>ul{

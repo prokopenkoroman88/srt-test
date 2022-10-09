@@ -2,6 +2,7 @@ import { aWindRose } from './../system.js';
 import PixelColor from './../canvas/PixelColor.js';
 import CustomEditor from './../common/CustomEditor.js';
 import Vectorizer from './Vectorizer.js';
+import Isochromizer from './Isochromizer.js';
 
 
 //const mouseMv=0, mouseDn=1, mouseUp=2;
@@ -29,6 +30,7 @@ export default class VectorAnalyzer extends CustomEditor{
 		this.rectDest={left:8*0, top:8*0, right:w, bottom:h};
 
 		this.vectorizer = new Vectorizer(this.canvas);
+		this.isochromizer = new Isochromizer(this.canvas);
 
 		this.mode=VectorAnalyzer.modeArrow;
 	}
@@ -54,11 +56,35 @@ export default class VectorAnalyzer extends CustomEditor{
 				  .up()
 			  .up()
 			.button('').inner('mu').assignTo('btnMu')
+			.button('').inner('IsoChrom').assignTo('btnIso')
 		  .up();
 
 		this.addOnClick('btnMu', function(){
 			this.calcMu();
 		});
+		this.addOnClick('btnIso', function(){
+			this.isochromize();
+		});
+
+	}
+
+	isochromize(){
+		this.rectSend.top=660+3-3;//0;
+		this.rectSend.bottom=670-1-3+3;//this.canvas.height-1;
+		this.rectSend.left=1010;//Math.round(this.canvas.width/3);
+		this.rectSend.right=1020-1-6+6;//this.rectSend.left+Math.round(this.canvas.width/3);
+		//50*50
+
+		this.isochromizer.scanSubPixels(this.rectSend);
+
+		this.rectDest.top=0;//0;
+		this.rectDest.bottom=250+750-1;//this.canvas.height-1;
+		this.rectDest.left=0;//Math.round(this.canvas.width/3);
+		this.rectDest.right=250+750-1;//this.rectSend.left+Math.round(this.canvas.width/3);
+
+		this.isochromizer.showSubPixels(this.rectSend,this.rectDest);
+
+
 
 	}
 
@@ -98,12 +124,13 @@ export default class VectorAnalyzer extends CustomEditor{
 		this.rectSend.left=Math.round(this.canvas.width/3);
 		this.rectSend.right=this.rectSend.left+Math.round(this.canvas.width/3);
 		this.vectorizer.calcMu(this.rectSend);
+		this.vectorizer.gatherMu(this.rectSend);
 
 		this.rectDest.top=0;
 		this.rectDest.bottom=this.canvas.height-1;
 		this.rectDest.left=0;
 		this.rectDest.right=this.rectDest.left+Math.round(this.canvas.width/3);
-		this.vectorizer.showMu(this.rectSend, this.rectDest);
+//		this.vectorizer.showMu(this.rectSend, this.rectDest);
 	}
 
 	showLupa(x,y){
@@ -129,10 +156,19 @@ export default class VectorAnalyzer extends CustomEditor{
 		for(let i=0; i<8; i++){
 			let xx=2+aWindRose[i].dx;
 			let yy=2+aWindRose[i].dy;
+
+			let cmps='';
+			let cell = this.vectorizer.cells[y+yy][x+xx];
+			console.log(cell);
+			if(cell && cell.cmps)
+			cell.cmps.forEach( function(element, index) {
+				cmps+=' '+element.toFixed(1);
+			});
 			tds[yy*5+xx].innerHTML = 
-			 'ш'+cv.angle[i].lat.toFixed(2)+'<br>'
-			+'д'+cv.angle[i].long.toFixed(2)+'<br>'
-			+'r'+cv.dist[i].toFixed(2);
+cmps;
+//			 'ш'+cv.angle[i].lat.toFixed(2)+'<br>'
+//			+'д'+cv.angle[i].long.toFixed(2)+'<br>'
+//			+'r'+cv.dist[i].toFixed(2);
 		};//i++
 
 		let mu_Equal=cv.mu_Equal;
@@ -145,13 +181,13 @@ export default class VectorAnalyzer extends CustomEditor{
 
 		for(let i=0; i<5; i++){
 			for(let j=0; j<5; j++){
-				let v = this.vectorizer.vectors[y+i-2][x+j-2];
+				let cell = this.vectorizer.cells[y+i-2][x+j-2];
 				//console.log(x+j-2,y+i-2,this.rgba);
 				let pxl  = this.canvas.getPixel(x+j-2,y+i-2);//исходный пиксель
 				let pxl2 = this.canvas.getPixel(x+j-2,y+i-2);//получаемый соседний пиксель
-				if(v && v.vectors){
+				if(cell && cell.vectors){
 
-					v.vectors.forEach((vector)=>{
+					cell.vectors.forEach((vector)=>{
 						//вектор изменения цвета
 
 						let clr = 'hsl('

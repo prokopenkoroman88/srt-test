@@ -17,6 +17,8 @@ export default class BezierEditor extends CustomEditor{
 
 	init(){
 		super.init();
+		this.addOnCanvas('mousemove',(event=>this.doDrag(event)));
+		this.addOnCanvas('mouseup'  ,(event=>this.endDrag()));
 		this.screen = new BezierScreen(this.canvas);
 		this.mode=BezierEditor.modeArrow;
 		this.clear_curr();
@@ -49,7 +51,10 @@ export default class BezierEditor extends CustomEditor{
 			.button('').inner('SAVE').assignTo('btnSave')
 			.button('').inner('LOAD').assignTo('btnLoad')
 		.up()
-		.div('bezier').assignTo('barContent');
+		.div('bezier').assignTo('barContent')
+		.attr('style','top: 100px; left: 500px; ')
+		.event('mousemove',(event=>this.doDrag(event)).bind(this))
+		.event('mouseup'  ,(event=>this.endDrag()).bind(this));
 		this.add_li_content();
 
 		this.addOnClick('btnArrow', function(){
@@ -492,12 +497,14 @@ export default class BezierEditor extends CustomEditor{
 	}
 
 	add_li_content(){
+		let editor = this;
 		this.add_li('content', function(newTag, pathIds){
 			newTag.ul('')
 			.dn()
 				.li('content')
 				.dn()
 					.h(2)
+					.event('mousedown',(event=>editor.startDrag(event, event.target.parentNode.parentNode.parentNode)).bind(editor))
 					.dn()
 						.button('wrapper').event('click', function(){
 							this.parentNode.parentNode.classList.toggle('closed');

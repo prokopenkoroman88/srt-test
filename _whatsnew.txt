@@ -1,0 +1,2033 @@
+
+
+--------------
++31.7.22
+
++D:\STEP\PHP\OSPanel\domains\srt-test\js\cogn\VectorAnalyzer.js
+
+
+-----------------
+10.8.22
++D:\STEP\PHP\OSPanel\domains\srt-test\js\cogn\Vectorizer.js
+
+
+showLupa()
+
+		for(let i=0; i<5; i++){
+			for(let j=0; j<5; j++){
+				//
+				//this.rgba=this.canvas.getRGB(x+j-2,y+i-2);
+				//?//let rgba2 = inverseRGB(this.rgba);
+				let rgba = this.canvas.getPixel(x+j-2,y+i-2);
+				//console.log(x+j-2,y+i-2,this.rgba);
+				//tds[i*5+j].style='background-color:rgb('+this.rgba[0]+','+this.rgba[1]+','+this.rgba[2]+'); color:rgb('+(255-this.rgba[0])+','+(255-this.rgba[1])+','+(255-this.rgba[2])+'); ';
+				tds[i*5+j].style.backgroundColor=rgba.toColor();//'rgb('+this.rgba[0]+','+this.rgba[1]+','+this.rgba[2]+')';
+				tds[i*5+j].style.color=rgba.inverse().toColor();
+
+
+				tds[i*5+j].innerHTML='';
+			};//j
+		};//i
+
+		for(let i=0; i<8; i++){
+			//
+			let xx=2+aWindRose[i].dx;
+			let yy=2+aWindRose[i].dy;
+			
+			tds[yy*5+xx].innerHTML = 'ш'+Math.round(this.vectorizer.controlVector.angle[i].lat*100)/100 
+			//+ '<br>д'+Math.round(this.vectorizer.controlVector.angle[i].long*100)/100 
+			//+ '<br>r'+Math.round(this.vectorizer.controlVector.dist[i]*100)/100  ;
+			+ '<br>д'+this.vectorizer.controlVector.angle[i].long.toFixed(2)
+			+ '<br>r'+this.vectorizer.controlVector.dist[i].toFixed(2) ;
+			
+		};//i++
+
+
+
+		for(let i=0; i<5; i++){
+			for(let j=0; j<5; j++){
+				let v = this.vectorizer.vectors[y+i-2][x+j-2];
+				//console.log(x+j-2,y+i-2,this.rgba);
+				let pxl  = this.canvas.getPixel(x+j-2,y+i-2);//исходный пиксель
+				let pxl2 = this.canvas.getPixel(x+j-2,y+i-2);//получаемый соседний пиксель
+				if(v.vectors){
+
+					v.vectors.forEach((vector)=>{
+						//вектор изменения цвета
+/*
+//vector.colorDelta.long и vector.colorDelta.lat - относительно координат:
+	getColorCoords(){
+		let radius = this.getContrast();
+		return {
+			x:Math.sin(this.getHue())*radius, 
+			y:Math.cos(this.getHue())*radius, 
+			z:this.getBrightness()*2-1
+		};
+		//x:[-1..1], y:[-1..1], z:[-1..1]
+
+
+	static angle(d1,d2){
+		let longitude=Math.atan2(d2.y-d1.y, d2.x-d1.x);//долгота оттенок
+		let latitude =Math.atan2(d2.z-d1.z, Math.sqrt( Math.pow(d2.x-d1.x,2) + Math.pow(d2.y-d1.y,2) ) );//широта  яркость
+		return {lat:latitude, long:longitude};
+	}
+
+
+*/
+						let clr = 'hsl('
+						+(pxl.getHue()/Math.PI*180+(vector.colorDelta.long)/Math.PI*180*vector.dist).toFixed(0)+'deg,'
+						//+(pxl.getHue()*360).toFixed(0)+'deg,'
+						+(pxl.getContrast()*100*1.6).toFixed(0)+'%,' //1.6?
+						+(pxl.getBrightness()*100+((vector.colorDelta.lat/(Math.PI/2))*50)*vector.dist ).toFixed(0)+'%'//0..1 + -PI/2..+PI/2
+						+')';
+						
+
+						//tds[i*5+j].innerHTML+='<br>v:'+vector.angle+' ш:'+vector.colorDelta.long.toFixed(2)+' д:'+vector.colorDelta.lat.toFixed(2);
+						//tds[i*5+j].innerHTML+='<div style=\' position:absolute;  width:2px; height:'+vector.dist*100+'px; background:#ff00ff;  left:50% ;  top:50% ;  transform-origin 50% 100%; transform:rotate('+(vector.angle/8*360).toFixed(0)+'deg);   \' ></div>';
+						tds[i*5+j].innerHTML+='<div class="vector" style=\'  --clr:'+clr+';  --hue:'+(vector.colorDelta.long/Math.PI*180).toFixed(0)+'deg;   --light:'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%;         width:'+vector.wide.toFixed(0)+'px;  height:'+vector.dist*100+'px; transform:rotate('+((vector.angle-4)/8*360).toFixed(0)+'deg);   \' ></div>';
+					});
+					
+				};
+			};//j
+		};//i
+
+
+
+
+		if(sideCount==2){
+			console.log('side', this.vectorizer.controlVector.sides[0], this.vectorizer.controlVector.sides[1]);
+			console.log('bridge', this.vectorizer.controlVector.getBridge(0), this.vectorizer.controlVector.getBridge(1));
+			console.log('avgAngle',this.vectorizer.controlVector.avgAngle[0], this.vectorizer.controlVector.avgAngle[1]);
+			console.log('skoAngle',this.vectorizer.controlVector.skoAngle[0], this.vectorizer.controlVector.skoAngle[1]);
+		};
+	}//showLupa
+
+
+
+style.css
+
+
+#top-panel .lupa td .vector{
+	position:absolute;
+	left:50%;
+	top:50%;
+
+	transform-origin: 50% 0%;
+	background: -webkit-linear-gradient(gray, hsl(var(--hue),100%,var(--light)) );
+	background-position: 50% 0%;
+
+	border:1px solid gray;
+/*
+width:2px;
+height:'+vector.dist*100+'px;
+background:#ff00ff;
+transform:rotate('+(vector.angle/8*360).toFixed(0)+'deg);
+*/
+}
+
+#top-panel .lupa td .vector:after{
+	position:absolute;
+	left:0%;
+	top:100%;
+
+	width: 5px;
+	height: 5px;
+	content:'';
+
+	background-color: var(--clr);
+
+	border:1px solid gray;
+}
+
+
+
+---------------------------------
+
+/*
+		document.querySelector('#btn-show').addEventListener('click', ()=>{//show
+			jpgAnalyzer.initRect();
+			//jpgAnalyzer.plavno();
+			//jpgAnalyzer.vawes();
+			//jpgAnalyzer.byEpicenters();
+			//jpgAnalyzer.by3Colors();
+			jpgAnalyzer.byClasters();
+			jpgAnalyzer.put();
+		});
+*/
+
+		this.btnShow.currHTMLTag.addEventListener('click', function(){
+
+
+			this.initRect();
+			//this.plavno();
+			//this.vawes();
+			//this.byEpicenters();
+			//this.by3Colors();
+			this.byClasters();
+			this.put();
+
+
+/*
+			jpgAnalyzer.initRect();
+			//jpgAnalyzer.plavno();
+			//jpgAnalyzer.vawes();
+			//jpgAnalyzer.byEpicenters();
+			//jpgAnalyzer.by3Colors();
+			jpgAnalyzer.byClasters();
+			jpgAnalyzer.put();
+*/
+
+		}.bind(this));	
+
+
+ї  ї
+
+
+
+
+/*cut mu and ShowLupa to VectorAnalyzer*/
+
+
+-------------------------------------------------------------------
+20.8.22
+
+
+
+
+
+	by3Colors(){//+25.1.22
+
+		let treeGray,treeRed,treeBlue;
+		treeGray = new AreaTree();
+		treeRed = new AreaTree();
+		treeBlue = new AreaTree();
+
+
+
+		let rgba=[0,0,0,0];
+		let iClr;
+		
+		for(let i=0; i</*10*/this.h; i++){
+		//for(let i=190-40; i<200; i++){
+
+
+			for(let j=0; j</*10*/this.w; j++){
+
+				iClr=0;
+				rgba=this.getRGB(this.x0+j, this.y0+i);
+
+
+
+				if( rgba[0]>=25 && rgba[0]<=75 && rgba[1]>=25 && rgba[1]<=70 && rgba[2]>=25 && rgba[2]<=70 
+
+				  &&  Math.abs(rgba[0]-rgba[1])<15  &&  Math.abs(rgba[1]-rgba[2])<15  &&  Math.abs(rgba[2]-rgba[0])<15    
+
+
+				  ){
+					if(rgba[0]==rgba[1] && rgba[1]==rgba[2] ){
+						iClr=1;
+						treeGray.addPoint(j,i);
+					}
+					else{
+						if(rgba[0]>rgba[1] && rgba[0]>rgba[2]){
+							iClr=2;
+							treeRed.addPoint(j,i);
+						};
+						if(rgba[2]>rgba[1] && rgba[2]>rgba[0]){
+							iClr=3;
+							treeBlue.addPoint(j,i);
+						};
+					};
+				};
+/*
+				if(iClr==1)rgba=[50,50,50,255];
+				if(iClr==2)rgba=[150,50,50,255];
+				if(iClr==3)rgba=[50,50,150,255];
+
+				if(iClr>0)
+					this.setRGB(this.x1+j, this.y1+i, rgba);
+*/
+			};//j
+
+		};//i
+
+
+		let treeMaroon = new AreaTree();
+		treeMaroon.addArea( treeGray );
+		treeMaroon.addArea( treeRed );
+
+
+
+		for(let i=0; i</*10*/this.h; i++){
+		//for(let i=190-40; i<200; i++){
+
+
+			for(let j=0; j</*10*/this.w; j++){
+				iClr=0;
+//				if(treeGray.hasPoint(j,i)) iClr=1;
+//				if(treeRed.hasPoint(j,i)) iClr=2;
+				if(treeBlue.hasPoint(j,i)) iClr=3;
+				if(treeMaroon.hasPoint(j,i)) iClr=4;
+
+				if(iClr==1)rgba=[50,50,50,255];
+				if(iClr==2)rgba=[150,50,50,255];
+				if(iClr==3)rgba=[50,50,150,255];
+				if(iClr==4)rgba=[100,50,50,255];
+
+				if(iClr>0)
+					this.setRGB(this.x1+j, this.y1+i, rgba);
+
+
+			};//j
+
+		};//i
+
+
+	}//by3Colors
+
+
+
+
+
+распределение cmpValue
+
+Vectorizer.js:261 0.0..0.1 413794
+Vectorizer.js:261 0.1..0.2 226625
+Vectorizer.js:261 0.2..0.3 271283
+Vectorizer.js:261 0.3..0.4 275330
+Vectorizer.js:261 0.4..0.5 278266
+Vectorizer.js:261 0.5..0.6 331312
+Vectorizer.js:261 0.6..0.7 310404
+Vectorizer.js:261 0.7..0.8 336201
+Vectorizer.js:261 0.8..0.9 310750
+Vectorizer.js:261 0.9..1.0 319330
+Vectorizer.js:261 1.0..1.1 505137
+Vectorizer.js:261 1.1..1.2 292924
+Vectorizer.js:261 1.2..1.3 318867
+Vectorizer.js:261 1.3..1.4 269877
+Vectorizer.js:261 1.4..1.5 284229
+Vectorizer.js:261 1.5..1.6 396706
+Vectorizer.js:261 1.6..1.7 281409
+Vectorizer.js:261 1.7..1.8 488273
+Vectorizer.js:261 1.8..1.9 304478
+Vectorizer.js:261 1.9..2.0 454238
+Vectorizer.js:261 2..2.1 0
+
+
+
+
+ready areas.length= 0
+Vectorizer.js:264 0..0.01 320377
+Vectorizer.js:264 0.01..0.02 82321
+Vectorizer.js:264 0.02..0.03 86023
+Vectorizer.js:264 0.03..0.04 129380
+Vectorizer.js:264 0.04..0.05 109739
+Vectorizer.js:264 0.05..0.06 118581
+Vectorizer.js:264 0.06..0.07 172873
+Vectorizer.js:264 0.07..0.08 117360
+Vectorizer.js:264 0.08..0.09 143053
+Vectorizer.js:264 0.09..0.1 132036
+Vectorizer.js:264 0.1..0.11 143295
+Vectorizer.js:264 0.11..0.12 132829
+Vectorizer.js:264 0.12..0.13 173966
+Vectorizer.js:264 0.13..0.14 150592
+Vectorizer.js:264 0.14..0.15 149038
+Vectorizer.js:264 0.15..0.16 154464
+Vectorizer.js:264 0.16..0.17 165779
+Vectorizer.js:264 0.17..0.18 152612
+Vectorizer.js:264 0.18..0.19 147088
+Vectorizer.js:264 0.19..0.2 193389
+Vectorizer.js:264 0.2..0.21 134255
+Vectorizer.js:264 0.21..0.22 152893
+Vectorizer.js:264 0.22..0.23 152379
+Vectorizer.js:264 0.23..0.24 133826
+Vectorizer.js:264 0.24..0.25 136910
+Vectorizer.js:264 0.25..0.26 329994
+Vectorizer.js:264 0.26..0.27 97531
+Vectorizer.js:264 0.27..0.28 107415
+Vectorizer.js:264 0.28..0.29 124362
+Vectorizer.js:264 0.29..0.3 109665
+Vectorizer.js:264 0.3..0.31 103128
+Vectorizer.js:264 0.31..0.32 142913
+Vectorizer.js:264 0.32..0.33 95528
+Vectorizer.js:264 0.33..0.34 127800
+Vectorizer.js:264 0.34..0.35 109356
+Vectorizer.js:264 0.35..0.36 108764
+Vectorizer.js:264 0.36..0.37 89811
+Vectorizer.js:264 0.37..0.38 204179
+Vectorizer.js:264 0.38..0.39 116406
+Vectorizer.js:264 0.39..0.4 88978
+Vectorizer.js:264 0.4..0.41 108258
+Vectorizer.js:264 0.41..0.42 101151
+Vectorizer.js:264 0.42..0.43 72883
+Vectorizer.js:264 0.43..0.44 182766
+Vectorizer.js:264 0.44..0.45 308858
+Vectorizer.js:264 0.45..0.46 56984
+Vectorizer.js:264 0.46..0.47 91446
+Vectorizer.js:264 0.47..0.48 269249
+Vectorizer.js:264 0.48..0.49 72486
+Vectorizer.js:264 0.49..0.5 165650
+Vectorizer.js:264 0.5..0.51 2431229
+Vectorizer.js:264 0.51..0.52 19407
+Vectorizer.js:264 0.52..0.53 11775
+Vectorizer.js:264 0.53..0.54 6601
+Vectorizer.js:264 0.54..0.55 15210
+Vectorizer.js:264 0.55..0.56 5972
+Vectorizer.js:264 0.56..0.57 6190
+Vectorizer.js:264 0.57..0.58 3409
+Vectorizer.js:264 0.58..0.59 2115
+Vectorizer.js:264 0.59..0.6 1033
+Vectorizer.js:264 0.6..0.61 2307
+Vectorizer.js:264 0.61..0.62 2044
+Vectorizer.js:264 0.62..0.63 3229
+Vectorizer.js:264 0.63..0.64 6501
+Vectorizer.js:264 0.64..0.65 389
+Vectorizer.js:264 0.65..0.66 301
+Vectorizer.js:264 0.66..0.67 802
+Vectorizer.js:264 0.67..0.68 228
+Vectorizer.js:264 0.68..0.69 234
+Vectorizer.js:264 0.69..0.7 809
+Vectorizer.js:264 0.7..0.71 1
+Vectorizer.js:264 0.71..0.72 10
+Vectorizer.js:264 0.72..0.73 23
+Vectorizer.js:264 0.73..0.74 37
+Vectorizer.js:264 0.74..0.75 73
+Vectorizer.js:264 0.75..0.76 727
+Vectorizer.js:264 0.76..0.77 0
+Vectorizer.js:264 0.77..0.78 0
+Vectorizer.js:264 0.78..0.79 0
+Vectorizer.js:264 0.79..0.8 0
+Vectorizer.js:264 0.8..0.81 0
+Vectorizer.js:264 0.81..0.82 0
+Vectorizer.js:264 0.82..0.83 0
+Vectorizer.js:264 0.83..0.84 0
+Vectorizer.js:264 0.84..0.85 0
+Vectorizer.js:264 0.85..0.86 0
+Vectorizer.js:264 0.86..0.87 0
+Vectorizer.js:264 0.87..0.88 0
+Vectorizer.js:264 0.88..0.89 0
+Vectorizer.js:264 0.89..0.9 0
+Vectorizer.js:264 0.9..0.91 0
+Vectorizer.js:264 0.91..0.92 0
+Vectorizer.js:264 0.92..0.93 0
+Vectorizer.js:264 0.93..0.94 0
+Vectorizer.js:264 0.94..0.95 0
+Vectorizer.js:264 0.95..0.96 0
+Vectorizer.js:264 0.96..0.97 0
+Vectorizer.js:264 0.97..0.98 0
+Vectorizer.js:264 0.98..0.99 0
+Vectorizer.js:264 0.99..1 0
+
+
+3500*700
+
+2445443
+
+
+
+
+-------------------------------------------------------
+1.9.22
+
+
+
+BezierEditor extends CustomEditor
+
+
+class BezierCanvas extends RealCanvas{
+d.b.
+class BezierScreen{
+
+
+pointIds -> points
+		let points = new Array(this.pointIds.length);
+		for(let i=0; i<this.pointIds.length; i++){
+			points[i]=ownFigure.points[ this.pointIds[i] ];
+		};
+
+	findFigure(){
+		let layers = BezierCanvas.cnv.layers;
+		console.log(layers);
+		for(let i=0; i<layers.length; i++){
+			let figures = layers[i].figures;
+			for(let j=0; j<figures.length; j++){
+				if (figures[j].splines.indexOf(this)>=0){
+					return figures[j];
+				};
+			};//j
+		};//i
+	}
+
+			//this.currCurve.splineIds.push(iSpline);
+			this.currCurve.splines.push(this.currSpline);
+
+
+
+
+BezierItem
+	create(owner)
+	this.ownFigure=owner;
+	this.rect
+
+extends BezierItem
+
+
+============================
+
+class BezierSpline {
+	constructor(points){
+		this.controlPointIds=points;//point0,point1
+		this.leverPoint=[];
+		this.width = 1;
+		this.color = '#000';
+d.b.
+class BezierSpline {
+	constructor(points){
+		this.points=points;//[0..3]
+
+		get controlPoint()
+		get leverPoint()
+
+
+-		this.width = 1;
+-		this.color = '#000';
+-	toArray()
+
+
+
+Replace editors function to RealCanvas;
+BezierEditor extends CustomEditor
+pointIds became points (ids to objects)
+BezierCanvas(RealCanvas) became BezierScreen.
+
+
+-------------------------------------------
+2.9.22
+
+
+
+//.attr('onclick', 'toggle_ul(this);' )
+function toggle_ul(this1){
+						console.log('1',this1);//
+						console.log('2',this1.parentNode);
+						console.log('3',this1.parentNode.parentNode);
+						//console.log('4',this1.parentNode.parentNode.classList);
+						this1.parentNode.parentNode.classList.toggle('closed');
+	};
+
+
+
+		let ids=[];
+		if(iLayer>=0){
+			ids.push(iLayer);
+			if(iFigure>=0){
+				ids.push(0);
+				ids.push(iFigure);
+				if(iCurve>=0){
+					ids.push(0);
+					ids.push(0);//curve
+					ids.push(0);
+					ids.push(iCurve);
+				};//curve
+				if(iSpline>=0){
+					ids.push(0);
+					ids.push(1);//spline
+					ids.push(0);
+					ids.push(iSpline);
+				};//spline
+				if(iPoint>=0){
+					ids.push(0);
+					ids.push(2);//Point
+					ids.push(0);
+					ids.push(iPoint);
+				};//Point
+				if(iRotor>=0){
+					ids.push(0);
+					ids.push(3);//Rotor
+					ids.push(0);
+					ids.push(iRotor);
+					if(iRotorPoint>=0){
+						ids.push(0);
+						ids.push(iRotorPoint);
+					};
+				};//Rotor
+
+			};//figure
+		};//layer
+
+
+	add_li_point(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+			point : this.currPoint.index,//this.currFigure.points.indexOf(this.currPoint),
+		};
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Point №'+pathIds.point;
+
+		let tag = this.find_li(pathIds);
+		tag.before(li);
+	}
+
+------------------------------
+6.9.22
+
+
+
+	get_element_ids(element){//event.target
+		let ids=[];
+		while (element && !element.classList.contains('layers')){//'content'
+			let parent = element.parentNode;
+			if(!parent)break;
+			let id = Array.from(parent.children).indexOf(element);
+			ids.unshift(id);
+			element = parent;
+		};
+		return ids;
+	}
+
+	find_li(pathIds){
+		let ids=this.compile_path_ids(pathIds);
+		return this.get_li(ids);
+	}
+
+	compile_path_ids(pathIds){
+		let iLayer = pathIds.layer??-1;
+		let iFigure = pathIds.figure??-1;
+		let iCurve = pathIds.curve??-1;
+		let iSpline = pathIds.spline??-1;
+		let iPoint = pathIds.point??-1;
+		let iRotor = pathIds.rotor??-1;
+		let iRotorPoint = -1;
+
+		let ids=[];
+		if(iLayer>=0){
+			ids.push(iLayer);
+			if(iFigure>=0){
+				ids.push(0+1,iFigure);
+				if(iCurve>=0){
+					ids.push(0+1,0,0,iCurve);
+				};//curve
+				if(iSpline>=0){
+					ids.push(0+1,1,0,iSpline);
+				};//spline
+				if(iPoint>=0){
+					ids.push(0+1,2,0,iPoint);
+				};//Point
+				if(iRotor>=0){
+					ids.push(0+1,3,0,iRotor);
+					if(iRotorPoint>=0){
+						ids.push(0,iRotorPoint);
+					};
+				};//Rotor
+			};//figure
+		};//layer
+		return ids;
+	}
+
+	get_li(ids){
+		let currTag = this.ulLayer.currHTMLTag;
+		console.log(ids);
+		ids.forEach( function(id) {
+			currTag = currTag.children[id];
+		});
+
+		return currTag;
+	}
+
+	set_curr(ids){
+		this.clear_curr();
+		if(ids.length<=0)return;
+		this.currLayer = this.screen.content.layers[ids[0]];
+		if(ids.length<=2)return;
+		this.currFigure = this.currLayer.figures[ids[2]];
+		if(ids.length<=6)return;
+		switch (ids[4]) {
+			case 0:
+				this.currCurve = this.currFigure.curves[ids[6]];
+				break;
+			case 1:
+				this.currSpline = this.currFigure.splines[ids[6]];
+				break;
+			case 2:
+				this.currPoint = this.currFigure.points[ids[6]];
+				break;
+			case 3:
+				this.currRotor = this.currFigure.rotors[ids[6]];
+				break;
+			default:
+				break;
+		};
+	}
+
+	add_li_point(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+			point : this.currPoint.index,//this.currFigure.points.indexOf(this.currPoint),
+		};
+
+		let li = document.createElement('li');
+		li.innerHTML = pathIds.point+' ('+this.currPoint.x+','+this.currPoint.y+')'//'Point №'+pathIds.point;
+
+		let tag = this.find_li(pathIds);
+		tag.before(li);
+	}
+
+	add_li_rotor(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+			rotor : this.currFigure.rotors.indexOf(this.currRotor),
+		};
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Rotor №'+pathIds.rotor;
+
+		let tag = this.find_li(pathIds);
+		tag.before(li);
+	}
+
+	add_li_spline(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+			spline : this.currSpline.index,//this.currFigure.splines.indexOf(this.currSpline),
+		};
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Spline №'+pathIds.spline;
+
+		let tag = this.find_li(pathIds);
+		tag.before(li);
+	}
+
+	add_li_curve(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+			curve : this.currCurve.index,//this.currFigure.curves.indexOf(this.currCurve),
+		};
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Curve №'+pathIds.curve;
+
+		let tag = this.find_li(pathIds);
+		tag.before(li);
+		//this.ulLayer.currHTMLTag.children[iLayer].children[0].children[iFigure].children[0].lastElementChild.before(li);
+	}
+
+
+	add_li_figure(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+			figure : this.currLayer.figures.indexOf(this.currFigure),
+		};
+		if(pathIds.layer<0)
+			pathIds.layer=0;
+
+
+/*
+		let li = document.createElement('li');
+		li.innerHTML = 'Figure №'+pathIds.figure;
+		let ul = document.createElement('ul');
+		let liNew = document.createElement('li');
+		liNew.innerHTML='add curve'
+		ul.append(liNew);
+		li.append(ul);
+//*/
+		let tag = this.find_li(pathIds);
+		//console.log(tag.parentNode);
+
+		let myTag = new Tag(this,tag.parentNode);
+		myTag
+			.li('figure')
+			.dn()
+				.h(3)
+				.dn()
+					.button('toggler').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Figure №'+pathIds.figure)
+				.up()
+				.ul('')
+				.dn()
+					.li('curves').inner('curves')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add curve').inner('add curve')
+						.up()
+					.up()
+					.li('splines').inner('splines')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add spline').inner('add spline')
+						.up()
+					.up()
+					.li('points').inner('points')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add point').inner('add point')
+						.up()
+					.up()
+					.li('rotors').inner('rotors')
+					.dn()
+						.ul('')
+						.dn()
+							.li('add rotor').inner('add rotor')
+						.up()
+					.up()
+				.up();
+
+		tag.before(myTag.last.currHTMLTag);
+		//tag.before(li);
+		//this.ulLayer.currHTMLTag.children[iLayer].children[0].lastElementChild.before(li);
+	}
+
+	add_li_layer(){
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+		};
+
+		let tag = this.find_li(pathIds);
+
+		console.log(tag.parentNode);
+		let myTag = new Tag(this,tag.parentNode);
+		myTag
+			.li('layer')
+			.dn()
+				.h(3)
+				.dn()
+					.button('toggler').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Layer №'+pathIds.layer)
+				.up()
+				.ul('')
+				.dn()
+					.li('add figure').inner('add figure')
+				.up()
+			.up();
+
+			console.log(myTag);
+		tag.before(myTag.last.currHTMLTag);//tag.before(myTag);
+
+		//tag.before(li);
+		//this.ulLayer.currHTMLTag.lastElementChild.before(li);
+	}
+
+	add_li(){
+		//
+
+
+
+		//let topPanel = document.querySelector(panelSelector);
+		//this.root = new Tag(this,topPanel);
+
+
+
+/*
+
+
+
+
+//curve
+
+		let iLayer = this.screen.content.layers.indexOf(this.currLayer);
+		let iFigure = this.currLayer.figures.indexOf(this.currFigure);
+		let iCurve = this.currFigure.curves.indexOf(this.currCurve);
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Curve №'+iCurve;
+
+
+		this.ulLayer.currHTMLTag.children[iLayer].children[0].children[iFigure].children[0].lastElementChild.before(li);
+
+
+
+
+
+//figure
+
+		let iLayer = this.screen.content.layers.indexOf(this.currLayer);
+		if(iLayer<0)iLayer=0;
+		let iFigure = this.currLayer.figures.indexOf(this.currFigure);
+
+
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Figure №'+iFigure;
+		let ul = document.createElement('ul');
+		let liNew = document.createElement('li');
+		liNew.innerHTML='add curve'
+		ul.append(liNew);
+		li.append(ul);
+
+
+
+		this.ulLayer.currHTMLTag.children[iLayer].children[0].lastElementChild.before(li);
+
+
+//layer
+
+		let iLayer = this.screen.content.layers.indexOf(this.currLayer);
+
+		let li = document.createElement('li');
+		li.innerHTML = 'Layer №'+iLayer;
+		let ul = document.createElement('ul');
+		let liNew = document.createElement('li');
+		liNew.innerHTML='add figure'
+		ul.append(liNew);
+		li.append(ul);
+
+		this.ulLayer.currHTMLTag.lastElementChild.before(li);
+
+*/
+
+	}
+
+
+---------------------------
+7.9.22
+
+
+
+	add_li_layer(){
+
+		this.add_li('layer', function(myTag, pathIds){
+		myTag
+			.li('layer')
+			.dn()
+				.h(3)
+				.dn()
+					.button('toggler').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Layer №'+pathIds.layer)
+				.up()
+				.ul('')
+				.dn()
+					.li('add figure').inner('add figure')
+				.up()
+			.up();
+		})
+/*
+
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+		};
+
+		let tag = this.find_li(pathIds);
+
+		console.log(tag.parentNode);
+		let myTag = new Tag(this,tag.parentNode);
+		myTag
+			.li('layer')
+			.dn()
+				.h(3)
+				.dn()
+					.button('toggler').event('click', function(){
+						this.parentNode.parentNode.classList.toggle('closed');
+					})
+					.span('').inner('Layer №'+pathIds.layer)
+				.up()
+				.ul('')
+				.dn()
+					.li('add figure').inner('add figure')
+				.up()
+			.up();
+
+		tag.before(myTag.last.currHTMLTag);
+*/
+	}
+
+	add_li(type, tadAddFunc){
+		let pathIds = {
+			layer : this.screen.content.layers.indexOf(this.currLayer),
+		};
+		if(['figure','curve','spline','point','rotor'].indexOf(type)>=0 )
+			pathIds.figure = this.currLayer.figures.indexOf(this.currFigure);
+		switch (type) {
+			case 'curve':
+				pathIds.curve = this.currSpline.index;
+				break;
+			case 'spline':
+				pathIds.spline = this.currSpline.index;
+				break;
+			case 'point':
+				pathIds.point = this.currPoint.index;
+				break;
+			case 'rotor':
+				pathIds.rotor = this.currRotor.index;
+				break;
+			default:
+				break;
+		};
+
+		let tag = this.find_li(pathIds);
+
+		//console.log(tag.parentNode);
+		let myTag = new Tag(this,tag.parentNode);
+		tadAddFunc(myTag, pathIds);
+
+		tag.before(myTag.last.currHTMLTag);
+	}
+
+
+
+.bezier{
+	position:fixed;
+	top:100px;
+	right:100px;
+	background-color: #aaa;
+	border:1px outset #aaa;
+}
+
+/*.bezier .outset{*/
+.bezier li{
+	border:1px solid gray;
+	border-left-color: white;
+	border-top-color: white;
+}
+
+
+/*.bezier .inset{*/
+.bezier ul{
+	border:1px solid gray;
+	border-right-color: white;
+	border-bottom-color: white;
+}
+
+.bezier h2, .bezier h3, .bezier h4{
+	margin-top: 2px;
+	margin-bottom: 0;
+} 
+
+.bezier ul{
+	padding-left: 0px;
+	margin-left: 20px;
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+.bezier>ul{
+	padding-left: 0px;
+	margin: 0px;
+	border:none;
+}
+
+.bezier .content{
+	width: calc(500px + 20px + 18px + 20px + 18px + 8px);
+}
+
+
+.bezier .content>ul{
+	max-height: 650px;
+	overflow-y: scroll;
+}
+
+
+.bezier .layer{
+	background-color: #bbb;
+	width: calc(100% - 4px);/*calc(500px + 20px + 18px + 4px);*/
+}
+
+.bezier .layer>ul{
+	max-height: 450px;
+	overflow-y: scroll;
+}
+
+
+.bezier .figure{
+	background-color: #ccc;
+	width: calc(100% - 4px);/*500px;*/
+}
+
+.bezier .figure ul{
+	margin-left: 0px;
+	padding-left: 0px;
+}
+
+.bezier ul{
+	list-style: none;
+}
+
+.bezier .active{
+	color: red;
+}
+
+.bezier .figure>ul>li{
+	display: inline-block;
+	vertical-align: top;
+	width: calc(25% - 2px);
+	background-color: #ddd;
+}
+
+.bezier .figure>ul>li>ul{
+	max-height: 150px;
+	overflow-y: scroll;
+}
+
+
+.bezier li.closed ul{
+	display: none;
+}
+
+.bezier button.toggler{
+	display: inline-block;
+	height: 12px;
+	width: 12px;
+}
+
+.bezier button.toggler:before{
+	display: block;
+	height: 10px;
+	width: 10px;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	left: -5px;
+	top: -5px;
+}
+
+.bezier :not(li.closed) button.toggler:before{
+	content: 'x';
+}
+
+.bezier li.closed button.toggler:before{
+	content: 'o';
+}
+
+
+
+
+
+		.div('bezier').assignTo('barContent')
+		.dn()
+/*			.ul('')
+
+			.dn()
+				.li('content')
+				.dn()
+					.h(2)
+					.dn()
+						.button('wrapper').event('click', function(){
+							this.parentNode.parentNode.classList.toggle('closed');
+						})
+						.span('').inner('Content tree')
+					.up()
+					.ul('layers')
+					.dn()
+						.li('add layer').inner('add layer')
+					.up()
+				.up()
+			.up()
+*/
+		.up();
+		this.add_li_content();
+
+
+---------------------------------------------------------------
+11.9.22
+
+		let th=this;
+
+
+
+		this.barVocs.currHTMLTag.addEventListener('mousemove',function(event){
+			console.log(event);
+			//console.log(th.currX,th.currY);
+			console.log(event.clientX, event.clientY);
+			//let dx = event.clientX - th.currX;
+			//let dy = event.clientY - th.currY;
+
+			if(th.selTable){
+				console.log(th.dx,th.dy,'delta');
+				th.selTable.style.left= event.clientX - th.dx+'px';
+				th.selTable.style.top = event.clientY - th.dy+'px';
+			}
+		});
+
+		this.barVocs.currHTMLTag.addEventListener('mouseup',function(event){
+			if(th.selTable){
+				th.selTable=null;
+			}
+		});
+
+
+
+
+			this.barVocs
+			.div('table').attr('style',' left: '+table.x+'px; top: '+table.y+'px; background:'+table.color+'; ')
+			.dn()
+				.h(3)
+					//.event('mousedown',this.headerMouseDown.bind(this))
+					.event('mousedown',(function(event){ this.mousedown(event, event.target.parentNode);}).bind(this) )
+					.event('mousedown',(event=>{ this.mousedown(event, event.target.parentNode);}).bind(this) )
+					.event('mousedown',(event=>this.mousedown(event, event.target.parentNode)).bind(this))
+/*
+					.event('mousedown',function(event){
+						th.mousedown(event, event.target.parentNode);
+
+						th.selTable = event.target.parentNode;
+						th.dx= event.clientX - parseInt(th.selTable.style.left);
+						th.dy= event.clientY - parseInt(th.selTable.style.top );
+						console.log(th.selTable.style.left, th.selTable.style.top);
+						console.log( event.clientX,event.clientY, 'mousedown');
+
+					})
+*/
+
+
+
+	headerMouseDown(event){
+		this.mousedown(event, event.target.parentNode);
+	}
+
+	mousedown(event, tag){
+		this.selTable=tag;
+		this.dx= event.clientX - parseInt(this.selTable.style.left);
+		this.dy= event.clientY - parseInt(this.selTable.style.top );
+		console.log(this.selTable.style.left, this.selTable.style.top);
+		console.log( event.clientX,event.clientY, 'mousedown');
+	}
+
+==================================
+
+
+
+
+	startDrag(event, tag){
+		this.selTable=tag;
+		this.dx= event.clientX - parseInt(this.selTable.style.left);
+		this.dy= event.clientY - parseInt(this.selTable.style.top );
+		console.log(this.selTable.style.left, this.selTable.style.top);
+		console.log( event.clientX,event.clientY, 'mousedown');
+	}
+
+	doDrag(event){
+			console.log(event);
+			//console.log(th.currX,th.currY);
+			console.log(event.clientX, event.clientY);
+			//let dx = event.clientX - th.currX;
+			//let dy = event.clientY - th.currY;
+
+			if(this.selTable){
+				console.log(this.dx,this.dy,'delta');
+				this.selTable.style.left= event.clientX - this.dx+'px';
+				this.selTable.style.top = event.clientY - this.dy+'px';
+			}
+	}
+
+	endDrag(){
+			if(this.selTable){
+				this.selTable=null;
+			}
+	}
+
+-------------------------------------------
+13.9.22
+
+
+
+
+
+http://eir.zp.edu.ua/bitstream/123456789/4897/1/M07272.pdf
+
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/reactdom.development.js"></script>
+
+Лістинг 4.4 - Підключення компілятора Babel
+<script src="https://unpkg.com/babelstandalone@6.15.0/babel.min.js"></script>
+</head>
+
+
+Примітка: якщо б ми не підключили компілятор Babel в файлі
+index.js, то змушені б були використовувати застарілі виразні
+можливості, зокрема, використовувати конструкцію const express =
+require ('express') замість конструкції import express from 'express'.
+
+
+
+
+
+
+http://eir.zp.edu.ua/bitstream/123456789/7323/1/MR_Polyanskij.pdf
+
+<script crossorigin="anonymous" src="https://static.parastorage.com/unpkg/axios@0.18.0/dist/axios.min.js"></script>
+
+
+https://unpkg.com/axios@0.18.0/dist/axios.min.js
+
+!!!!!!!!!!!
+<script crossorigin="anonymous" src="https://unpkg.com/axios@0.18.0/dist/axios.min.js"></script>
+!!!!!!!!!!!!!
+
+
+
+
+
+
+			//https://hackit-ukraine.com/2487-simple-http-requests-in-javascript-using-axios
+			//const axios = require('axios')const getBreeds = async () => { try { return await axios.get('//dog.ceo/api/breeds/list/all') } catch (error) { console.error(error) }}const countBreeds = async () => { const breeds = await getBreeds()                     if (  breeds.data.message) { console.log(`Got ${Object.entries(  breeds.data.message).length} breeds`) } }                                          countBreeds()//async-await
+			//const axios = require('axios')const getBreeds =       () => { try { return       axios.get('//dog.ceo/api/breeds/list/all') } catch (error) { console.error(error) }}const countBreeds = async () => { const breeds =       getBreeds() .then(response => { if (response.data.message) { console.log(`Got ${Object.entries(response.data.message).length} breeds`) } }) .catch(error => { console.log(error) })}countBreeds()//promise
+
+
+
+//*
+			const axios = require('axios')
+			const getBreeds = async () => {
+				try {
+					return await axios.get('//dog.ceo/api/breeds/list/all') 
+				} catch (error) {
+					console.error(error) 
+				}
+			}
+			const countBreeds = async () => {
+				const breeds = await getBreeds()
+				if (  breeds.data.message) {
+					console.log(`Got ${Object.entries(  breeds.data.message).length} breeds`) 
+				}
+			}
+			countBreeds()//async-await
+//*/
+
+			//--------------
+
+
+
+/*
+			const axios = require('axios')
+			const getBreeds =       () => {
+				try {
+					return       axios.get('//dog.ceo/api/breeds/list/all')
+				} catch (error) {
+					console.error(error)
+				}
+			}
+			const countBreeds = async () => {
+				const breeds =       getBreeds()
+				.then(response => {
+					if (response.data.message) {
+						console.log(`Got ${Object.entries(response.data.message).length} breeds`)
+					}
+				})
+				.catch(error => {
+					console.log(error)
+				})
+			}
+			countBreeds()//promise
+//*/
+
+
+
+#4a7 зеленка
+
+
+--------------------------------------------
+3.10.22
+
+
+
+from Isochromizer
+
+
+	showFon(){
+		for(let i=0; i<destH; i++){
+			for(let j=0; j<destW; j++){
+				let rgba = this.canvas.getRGB(rectSend.left+j/scaleW, rectSend.top+i/scaleH);
+				this.canvas.setRGB(rectDest.left+j, rectDest.top+i, rgba);
+
+			};//j
+		};//i
+	}
+
+
+	showSubPixels(rectSend,rectDest){
+		let sendW = rectSend.right - rectSend.left + 1;
+		let destW = rectDest.right - rectDest.left + 1;
+		let sendH = rectSend.bottom - rectSend.top + 1;
+		let destH = rectDest.bottom - rectDest.top + 1;
+		let scaleW = destW/sendW;
+		let scaleH = destH/sendH;
+
+
+		this.showFon();
+
+
+
+		for(let i=0; i<sendH; i++){
+			for(let j=0; j<sendW; j++){
+
+				for(let look=2; look<=5; look++){
+					console.log(i,j, look, this.cells[rectSend.top+i][rectSend.left+j].aSub[look] );
+					let aSubPxl = this.cells[rectSend.top+i][rectSend.left+j].aSub[look].bridgeBrightness;
+					for(let k=0; k<aSubPxl.length; k++){
+						let val=Math.round(aSubPxl[k].value);
+						let rgba = [val, val, val, 255];
+						let p0={
+							x:rectDest.left+(aSubPxl[k].x-rectSend.left)*scaleW,
+							y:rectDest.top +(aSubPxl[k].y-rectSend.top )*scaleH,
+						};
+						//let p1={x:0,y:0};
+						this.canvas.setRGB(p0.x, p0.y, rgba);
+
+					};//k subpixel
+
+
+				};//look
+
+
+
+			};//j
+		};//i
+
+
+		this.canvas.put();
+
+
+		for(let i=0; i<sendH; i++){
+			for(let j=0; j<sendW; j++){
+
+/*
+				let clr1,clr2;
+
+				if(i>0 && j>0 && i<sendH-1 && j<sendW-1){
+				//if(i==3 && j==6){
+				for(let look=2; look<=5; look++){
+					//if(look!=5)continue;
+					//if(look==1 || look==5)continue;
+					//console.log(i,j, look, this.cells[rectSend.top+i][rectSend.left+j].aSub[look] );
+					let aSubPxl = this.cells[rectSend.top+i][rectSend.left+j].aSub[look].bridgeBrightness;
+					if(aSubPxl.length<2)continue;
+					let k;
+					k=0;
+					let sp0={
+						x:(aSubPxl[k].x),
+						y:(aSubPxl[k].y ),
+					};
+					k=aSubPxl.length-1;
+					let sp1={
+						x:(aSubPxl[k].x),
+						y:(aSubPxl[k].y ),
+					};
+
+
+					switch (look) {
+						case 2:
+							clr1='red';
+							clr2='orange';
+							break;
+						case 3:
+							clr1='green';
+							clr2='lime';
+							break;
+						case 4:
+							clr1='blue';
+							clr2='aqua';
+							break;
+						case 5:
+							clr1='purple';
+							clr2='pink';
+							break;
+
+
+						default:
+							// statements_def
+							break;
+					}
+
+
+
+					for(let k1=0; k1<k; k1++){
+						let p1={
+							x:Math.round(rectDest.left+(aSubPxl[k1].x-rectSend.left)*scaleW),
+							y:Math.round(rectDest.top +(aSubPxl[k1].y-rectSend.top )*scaleH),
+						};
+						let p2={
+							x:Math.round(rectDest.left+(aSubPxl[k1+1].x-rectSend.left)*scaleW),
+							y:Math.round(rectDest.top +(aSubPxl[k1+1].y-rectSend.top )*scaleH),
+						};
+
+
+						if(k1%2==0)
+							this.canvas.paintStandardLine(p1, p2, clr1)
+						else
+							this.canvas.paintStandardLine(p1, p2, clr2);
+					};
+
+
+
+					if(Math.abs(sp0.x - (rectSend.left+j))>1 || Math.abs(sp0.y - (rectSend.top+i))>1 )
+						console.log('[0] too far', i,j,look,' ', {x:rectSend.left+j, y:rectSend.top+i}, sp0);
+
+					if(Math.abs(sp1.x - (rectSend.left+j))>1 || Math.abs(sp1.y - (rectSend.top+i))>1 )
+						console.log('[n] too far', i,j,look,' ', {x:rectSend.left+j, y:rectSend.top+i}, sp1);
+
+
+				};//look
+				};
+
+				continue;//udali
+*/
+
+
+				//for(let look=2; look<=5; look++){
+				for(let look=0; look<=7; look++){
+					//console.log(i,j, look, this.cells[rectSend.top+i][rectSend.left+j].aSub[look] );
+					let aSubPxl;
+					try {
+						aSubPxl = this.cells[rectSend.top+i][rectSend.left+j].aSub[look].bridgeBrightness;
+					} catch(e) {
+						// statements
+						console.log(e);
+						continue;
+					}
+					
+					for(let k=0; k<aSubPxl.length; k++){
+						let val=Math.round(aSubPxl[k].value);
+						//let rgba = [val, val, val, 255];
+						let p0={
+							x:rectDest.left+(aSubPxl[k].x-rectSend.left)*scaleW,
+							y:rectDest.top +(aSubPxl[k].y-rectSend.top )*scaleH,
+						};
+						let p1={x:0,y:0};
+						//this.canvas.setRGB(p0.x, p0.y, rgba);
+
+
+
+						//if(val<126 || val>130) continue;
+						//if(val<128 || val>128) continue;
+
+						//iso lines ????????????
+						let sVal=val.toString(16);
+						if(val<16)sVal='0'+sVal;
+						let lineColor = '#'+sVal+sVal+sVal;
+						//
+
+						let look2;
+						let aSubPxl2;
+
+
+						let ortho=false;
+						//чтобы не плодить изо-линии
+						if(look==2 || look==6){
+							//
+							//look2 = 4
+							let neibCell = this.cells[rectSend.top+i +1][rectSend.left+j +0];
+
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							try {
+								if( aSubPxl2[0].value<=val && val<=aSubPxl2[aSubPxl2.length-1].value || aSubPxl2[0].value>=val && val>=aSubPxl2[aSubPxl2.length-1].value )
+								{
+									//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+									let k2;
+									for(k2=0; k2<aSubPxl2.length; k2++){
+										if(Math.round(aSubPxl2[k2].value)==val){
+											//
+											p1.x=rectDest.left+(aSubPxl2[k2].x-rectSend.left)*scaleW;
+											p1.y=rectDest.top +(aSubPxl2[k2].y-rectSend.top )*scaleH;
+											this.canvas.paintStandardLine(p0, p1, 'yellow');//lineColor);
+											console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+											ortho=true;
+											break;
+										};
+									};
+
+								};
+							} catch(e) {
+
+								console.log(e);
+							};
+
+//=====================================
+							//look2=0
+							neibCell = this.cells[rectSend.top+i -1][rectSend.left+j +0];
+
+							try{
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							} catch(e){
+								console.log(e);
+							}
+							try {
+								if( aSubPxl2[0].value<=val && val<=aSubPxl2[aSubPxl2.length-1].value || aSubPxl2[0].value>=val && val>=aSubPxl2[aSubPxl2.length-1].value )
+								{
+									//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+									let k2;
+									for(k2=0; k2<aSubPxl2.length; k2++){
+										if(Math.round(aSubPxl2[k2].value)==val){
+											//
+											p1.x=rectDest.left+(aSubPxl2[k2].x-rectSend.left)*scaleW;
+											p1.y=rectDest.top +(aSubPxl2[k2].y-rectSend.top )*scaleH;
+											this.canvas.paintStandardLine(p0, p1, 'aqua');//lineColor);
+											console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+											ortho=true;
+											break;
+										};
+									};
+
+								};
+							} catch(e) {
+
+								console.log(e);
+							};
+
+
+
+
+
+
+						};// |
+
+						if(ortho)continue;
+
+
+
+
+
+						if(i>0 && j>0 && i<sendH-1 && j<sendW-1){
+						look2 = Isochromizer.incLook(look);
+						aSubPxl2 = this.cells[rectSend.top+i][rectSend.left+j].aSub[look2].bridgeBrightness;
+					try {
+						if( aSubPxl2[0].value<=val && val<=aSubPxl2[aSubPxl2.length-1].value || aSubPxl2[0].value>=val && val>=aSubPxl2[aSubPxl2.length-1].value )
+						{
+							//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+							let k2;
+							for(k2=0; k2<aSubPxl2.length; k2++){
+								if(Math.round(aSubPxl2[k2].value)==val){
+									//
+									p1.x=rectDest.left+(aSubPxl2[k2].x-rectSend.left)*scaleW;
+									p1.y=rectDest.top +(aSubPxl2[k2].y-rectSend.top )*scaleH;
+									this.canvas.paintStandardLine(p0, p1, lineColor);
+									console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+									break;
+								};
+							};
+
+						};
+					} catch(e) {
+
+						console.log(e);
+					};
+
+						};//
+
+
+						if(i>0 && j>0 && i<sendH-1 && j<sendW-1){
+						look2 = Isochromizer.decLook(look);
+						aSubPxl2 = this.cells[rectSend.top+i][rectSend.left+j].aSub[look2].bridgeBrightness;
+					try {
+						if( aSubPxl2[0].value<=val && val<=aSubPxl2[aSubPxl2.length-1].value || aSubPxl2[0].value>=val && val>=aSubPxl2[aSubPxl2.length-1].value )
+						{
+							//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+							let k2;
+							for(k2=0; k2<aSubPxl2.length; k2++){
+								if(Math.round(aSubPxl2[k2].value)==val){
+									//
+									p1.x=rectDest.left+(aSubPxl2[k2].x-rectSend.left)*scaleW;
+									p1.y=rectDest.top +(aSubPxl2[k2].y-rectSend.top )*scaleH;
+									this.canvas.paintStandardLine(p0, p1, lineColor);
+									console.log('line-1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+									break;
+								};
+							};
+
+
+						};
+					} catch(e) {
+
+						console.log(e);
+					};
+
+
+
+						};//(i>0 && j>0)
+
+
+
+					};//k subpixel
+
+
+
+
+
+
+				};//look
+
+
+
+			};//j
+		};//i
+
+
+
+
+
+
+
+	}
+
+
+
+
+
+	getShowedPixel(pxl){//aSubPxl2[k2]
+		return {
+			x : this.rectDest.left+(pxl.x-this.rectSend.left)*this.scaleW,
+			y : this.rectDest.top +(pxl.y-this.rectSend.top )*this.scaleH,
+		};
+	}
+
+
+===================
+
+
+//simpled:
+		this.onSendPixels(function(i,j,cell){
+			this.onCellLooks(cell,function(cell,look,aSubPxl){
+				//
+				this.onSubpixelBridge(aSubPxl,function(pxl,rgba){
+					//
+					let p0 = this.getShowedPixel(pxl);
+					this.canvas.setRGB(p0.x, p0.y, rgba);
+				}.bind(this));
+			}.bind(this),0,7);
+
+
+		}.bind(this));
+
+
+/*
+		for(let i=0; i<sendH; i++){
+			for(let j=0; j<sendW; j++){
+
+				for(let look=2; look<=5; look++){
+					console.log(i,j, look, this.cells[rectSend.top+i][rectSend.left+j].aSub[look] );
+					let aSubPxl = this.cells[rectSend.top+i][rectSend.left+j].aSub[look].bridgeBrightness;
+					for(let k=0; k<aSubPxl.length; k++){
+						let val=Math.round(aSubPxl[k].value);
+						let rgba = [val, val, val, 255];
+						let p0={
+							x:rectDest.left+(aSubPxl[k].x-rectSend.left)*scaleW,
+							y:rectDest.top +(aSubPxl[k].y-rectSend.top )*scaleH,
+						};
+						//let p1={x:0,y:0};
+						this.canvas.setRGB(p0.x, p0.y, rgba);
+
+					};//k subpixel
+
+
+				};//look
+
+
+
+			};//j
+		};//i
+//*/
+
+==========================
+
+
+---------------------------------------
+8.10.22
+
+
+					let aSubPxl2, k2;
+
+
+					if(!this.areCoordsOnBorder(i,j,this.rectSend)){
+
+						const line2=lineColor;//'yellow'
+						const line4=lineColor;//'yellow'
+						const line6=lineColor;//'aqua'
+						const line0=lineColor;//'aqua'
+
+						let look2, neibCell;
+
+//*
+						let ortho=false;
+
+
+						function findLineNeib(look2){
+							neibCell = this.getNeibCell(i,j,look2);
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+						};
+
+						function findLine(){
+							k2 = this.indexOfPxlByVal(aSubPxl2,val);
+							if(k2>=0){
+								p1 = this.getShowedPixel(aSubPxl2[k2]);
+								console.log('+1', p0, p1);
+								this.canvas.paintStandardLine(p0, p1, lineColor);
+								//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+							};
+							return k2>=0;
+						};
+
+
+
+
+						//чтобы не плодить изо-линии
+						if(look==2 || look==6){
+
+							look2=4;
+							neibCell = this.getNeibCell(i,j,look2);
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							k2 = this.indexOfPxlByVal(aSubPxl2,val);
+							if(k2>=0){
+								p1 = this.getShowedPixel(aSubPxl2[k2])
+								this.canvas.paintStandardLine(p0, p1, line4);//'yellow'lineColor
+								//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+								ortho=true;
+							};
+
+//=====================================
+							look2=0
+							neibCell = this.getNeibCell(i,j,look2);
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							k2 = this.indexOfPxlByVal(aSubPxl2,val);
+							if(k2>=0){
+								p1 = this.getShowedPixel(aSubPxl2[k2])
+								this.canvas.paintStandardLine(p0, p1, line0);//'aqua'lineColor
+								//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+								ortho=true;
+							};
+
+						};
+
+						if(ortho)return;
+
+
+						//чтобы не плодить изо-линии
+						if(look==0 || look==4){
+
+							look2=2;
+							neibCell = this.getNeibCell(i,j,look2);
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							k2 = this.indexOfPxlByVal(aSubPxl2,val);
+							if(k2>=0){
+								p1 = this.getShowedPixel(aSubPxl2[k2])
+								this.canvas.paintStandardLine(p0, p1, line2);//'yellow'lineColor
+								//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+								ortho=true;
+							};
+
+//=====================================
+							look2=6
+							neibCell = this.getNeibCell(i,j,look2);
+							aSubPxl2 = neibCell.aSub[look].bridgeBrightness;
+							k2 = this.indexOfPxlByVal(aSubPxl2,val);
+							if(k2>=0){
+								p1 = this.getShowedPixel(aSubPxl2[k2])
+								this.canvas.paintStandardLine(p0, p1, line6);//'aqua'lineColor
+								//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+								ortho=true;
+							};
+
+						};
+
+						if(ortho)return;
+
+
+//*/
+//    i,j
+//   (cell,look, p0, val, pmLook)
+
+
+
+
+
+						aSubPxl2 = this.getNeibBridge(cell,look,1);
+						//console.log(aSubPxl2);
+						//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+						k2 = this.indexOfPxlByVal(aSubPxl2,val);
+						if(k2>=0){
+							p1 = this.getShowedPixel(aSubPxl2[k2]);
+							console.log('+1', p0, p1);
+							this.canvas.paintStandardLine(p0, p1, lineColor);
+							//console.log('line+1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+						};
+
+						aSubPxl2 = this.getNeibBridge(cell,look,-1);
+						//console.log(aSubPxl2);
+						//поиск такого же субпикселя как aSubPxl[k] на соседнем мосту aSubPxl2
+						k2 = this.indexOfPxlByVal(aSubPxl2,val);
+						if(k2>=0){
+							p1 = this.getShowedPixel(aSubPxl2[k2]);
+							console.log('-1', p0, p1);
+							this.canvas.paintStandardLine(p0, p1, lineColor);
+							//console.log('line-1 ',i,j,look,' to ',look2, p0, p1, p1.x-p0.x, p1.y-p0.y);
+						};
+
+					};//
+
+
+				}.bind(this));
+			}.bind(this),0,7);
+		}.bind(this));
+//*/
+		return; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Саша Абрамов
+063-053-00-12
+
+
+
+
+*431*20#
+заказал на 2 месяца с 50% скидкой
+
+
+https://my.lifecell.ua/uk/osnovna-informacia/osnovna-informacia/
+
+
+Номер телефону:	Статус лінії:	Основний рахунок:	Дата активації:	Вартість пакету послуг:
+380931374152	Активна	60,01 грн.	31.08.2011	60 грн / 4 тижні
+
+Бонусний рахунок	0,00
+Месенджери [додатково]	-32380876.0
+Соціальні мережі	Безліміт
+Хвилини [на інші номери по Україні]	120 хв.
+Хвилини [в мережі lifecell]	Безліміт
+Тарифний пакет Інтернету	4.00 ГБ
+lifecell 2G Відео	Безліміт
+lifecell Відео	10.00 ГБ
+Месенджери	Безліміт
+Модель телефону	CPH2219 Oppo
+Мова обслуговування	Українська
+Термін дії номеру	05.10.2023
+
+PIN1:	PIN2:	PUK1:	PUK2:
+1111	6577	90288156	79636152
+
+
+
+
+
+
+
+
+
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+http://sites.google.com/site
+мої сайти
+https://sites.google.com/new
+
+
+
+
+diplom
+
+Laravel 6 магазин софта
+
+
+portfolio
+
+Laravel 7 проект, який вміщає в собі кілька проектів
+*Пошук роботи
+
+
+
+
+
+diplom
+Laravel 6 магазин софта
+portfolio
+Laravel 7 проект, який вміщає в собі кілька проектів
+*Пошук роботи
+
+
+
+https://brainlab.com.ua/uk/glavnaya
+https://www.whiteweb.ua/
+https://voll.com.ua/uk/
+
+
+
+https://www.foxtrot.com.ua/uk/shop/trimmery_rowenta.html?filter=44405%3D4589%3Bprice%3D1119-2187%3B
+https://www.foxtrot.com.ua/uk/shop/trimmery_rowenta_tn1350f0.html
+Машинка для стрижки ROWENTA TN1350F0
+
+
+
+
+
+
+
+
+https://jarvis.net.ua/film/id/10414
+Пригоди Квака (2014)
+39 хв
+
+
+https://www.youtube.com/watch?v=awva621ZOkA
+Всё могу (2015) / Фантастика, комедия
+10:43
+https://www.youtube.com/user/cdlandvideo
+
+
+
+
+
+---------------------
+15.9.22
+
+Большая буква применяется при переводе целых заголовков, включая длинные разбитые на строки, где каждая сейчас с большой; а также по словам. Убрать недолго.
+
+В архиве я увидел только один файл с некорр именем - и это Норма запаса.
+
+
+
+
+C:\Users\Роман\Downloads\RAJAH\Спутник\xdClient AddFastCapt.log
+
+
+
+
+
