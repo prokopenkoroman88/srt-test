@@ -85,6 +85,19 @@ class BezierSpline extends FigureItem{
 	get array(){ return 'splines'; }
 	constructor(ownerFigure,points){
 		super(ownerFigure);
+
+		points=points.map((point)=>{
+			let res;
+			switch (typeof point) {
+				case 'object': res = point; break;
+				case 'number': res = ownerFigure.points[point]; break;
+				//case 'string': res = this.dotByName(dot); break;
+			};
+			return res;
+		},this);
+
+
+
 		this.points=points;//point0,point1
 	}
 

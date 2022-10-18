@@ -4,7 +4,7 @@ import PixelColor from './canvas/PixelColor.js';
 import CustomEditor from './common/CustomEditor.js';
 import JSONLoader from './common/JSON-Loader.js';
 
-const modeArrow=0, modeAddLayer=1, modeAddFigure=2, modeAddCurve=3, modeAddRotor=4, modeAddPoint=5;
+const modeArrow=0, modeAddLayer=1, modeAddFigure=2, modeAddCurve=3, modeAddSpline=4, modeAddRotor=5, modeAddPoint=6;
 
 export default class BezierEditor extends CustomEditor{
 
@@ -12,11 +12,14 @@ export default class BezierEditor extends CustomEditor{
 	static get modeAddLayer(){ return modeAddLayer; }
 	static get modeAddFigure(){ return modeAddFigure; }
 	static get modeAddCurve(){ return modeAddCurve; }
+	static get modeAddSpline(){ return modeAddSpline; }
 	static get modeAddRotor(){ return modeAddRotor; }
 	static get modeAddPoint(){ return modeAddPoint; }
 
 	init(){
 		super.init();
+		this.addOnCanvas('mousemove',(event=>this.doDrag(event)));
+		this.addOnCanvas('mouseup'  ,(event=>this.endDrag()));
 		this.screen = new BezierScreen(this.canvas);
 		this.mode=BezierEditor.modeArrow;
 		this.clear_curr();
@@ -42,6 +45,7 @@ export default class BezierEditor extends CustomEditor{
 			.button('').inner('AddLayer').assignTo('btnAddLayer')
 			.button('').inner('AddFigure').assignTo('btnAddFigure')
 			.button('').inner('AddCurve').assignTo('btnAddCurve')
+			.button('').inner('AddSpline').assignTo('btnAddSpline')
 			.button('').inner('AddRotor').assignTo('btnAddRotor')
 			.button('').inner('AddPoint').assignTo('btnAddPoint')
 			.input('').attr('type','color').assignTo('inpFill')
@@ -49,7 +53,10 @@ export default class BezierEditor extends CustomEditor{
 			.button('').inner('SAVE').assignTo('btnSave')
 			.button('').inner('LOAD').assignTo('btnLoad')
 		.up()
-		.div('bezier').assignTo('barContent');
+		.div('bezier').assignTo('barContent')
+		.attr('style','top: 100px; left: 500px; ')
+		.event('mousemove',(event=>this.doDrag(event)).bind(this))
+		.event('mouseup'  ,(event=>this.endDrag()).bind(this));
 		this.add_li_content();
 
 		this.addOnClick('btnArrow', function(){
@@ -70,6 +77,13 @@ export default class BezierEditor extends CustomEditor{
 		this.addOnClick('btnAddCurve', function(){
 			this.mode=BezierEditor.modeAddCurve;
 			this.iter=-1;
+		});
+
+		this.addOnClick('btnAddSpline', function(){
+			this.mode=BezierEditor.modeAddSpline;
+			this.iter=-1;
+			this.currPoint=null;
+			this.points=[null,null,null,null];
 		});
 
 		this.addOnClick('btnAddRotor', function(){
@@ -225,6 +239,9 @@ export default class BezierEditor extends CustomEditor{
 			case modeAddCurve:
 				this.btnAddCurve.currHTMLTag.classList.remove('active');
 				break;
+			case modeAddSpline:
+				this.btnAddSpline.currHTMLTag.classList.remove('active');
+				break;
 			case modeAddRotor:
 				this.btnAddRotor.currHTMLTag.classList.remove('active');
 				break;
@@ -249,6 +266,9 @@ export default class BezierEditor extends CustomEditor{
 				break;
 			case modeAddCurve:
 				this.btnAddCurve.currHTMLTag.classList.add('active');
+				break;
+			case modeAddSpline:
+				this.btnAddSpline.currHTMLTag.classList.add('active');
 				break;
 			case modeAddRotor:
 				this.btnAddRotor.currHTMLTag.classList.add('active');
@@ -284,13 +304,43 @@ export default class BezierEditor extends CustomEditor{
 		return this.currRotor;
 	}
 
-	addSpline(args){
+	addSplineManual(args){
 		let oldPoint = this.currPoint;
 		let lever1 = this.addPoint(args[0].x, args[0].y);
 		let lever2 = this.addPoint(args[1].x, args[1].y);
 		let newPoint = this.addPoint(args[2].x, args[2].y);
 
-		this.currSpline = new BezierSpline(this.currFigure, [oldPoint, lever1, lever2, newPoint]);//newPoint==this.currPoint
+		this.addSpline([oldPoint, lever1, lever2, newPoint]);//newPoint==this.currPoint
+	}
+
+	preparePoints(points){
+		points=points.map((point)=>{
+			let res;
+			switch (typeof point) {
+				case 'object': {
+					if(point.ownFigure)
+						res = point;//by Point
+					else {
+						let id = -1;
+						//if(this.needFind)
+							id = this.currFigure.findPointByCoords(point.x, point.y).point;//by {x,y}
+						if(id>=0)
+							res = this.currFigure.points[id];//find
+						else
+							res = this.addPoint(point.x, point.y);//new
+					};
+				}; break;
+				case 'number': res = this.currFigure.points[point]; break;//by id
+				//case 'string': res = this.currFigure.pointByName(point); break;
+			};
+			return res;
+		},this);
+		return points;
+	}
+
+	addSpline(points){//objs or ids or {x,y}
+		points = this.preparePoints(points);
+		this.currSpline = new BezierSpline(this.currFigure, points);//newPoint==this.currPoint
 		let iSpline = this.currFigure.splines.push(this.currSpline)-1;//canvas
 		if(this.currCurve)
 			this.currCurve.splines.push(this.currSpline);
@@ -492,12 +542,14 @@ export default class BezierEditor extends CustomEditor{
 	}
 
 	add_li_content(){
+		let editor = this;
 		this.add_li('content', function(newTag, pathIds){
 			newTag.ul('')
 			.dn()
 				.li('content')
 				.dn()
 					.h(2)
+					.event('mousedown',(event=>editor.startDrag(event, event.target.parentNode.parentNode.parentNode)).bind(editor))
 					.dn()
 						.button('wrapper').event('click', function(){
 							this.parentNode.parentNode.classList.toggle('closed');
@@ -613,6 +665,16 @@ export default class BezierEditor extends CustomEditor{
 					this.mode = modeAddPoint;
 				};
 			}; break;
+			case modeAddSpline:
+			{
+				if(kak==CustomEditor.mouseDn){
+					this.points[++this.iter]={x:x,y:y};
+					if(this.iter>=3){
+						this.addSpline(this.points);
+						this.mode = modeArrow;
+					};
+				};
+			}; break;
 			case modeAddRotor:
 			{
 				if(kak==CustomEditor.mouseDn){
@@ -630,7 +692,7 @@ export default class BezierEditor extends CustomEditor{
 
 				if(this.iter==0){
 					let p={x:this.currPoint.x, y:this.currPoint.y};//start of curve
-					this.addSpline(this.args);
+					this.addSplineManual(this.args);
 					//this.paintStandardCurve(this.args, 'red');
 
 

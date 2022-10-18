@@ -29,7 +29,7 @@ export default class CustomEditor{
 	}
 
 	init(){
-
+		this.drag={tag:null,};
 	}
 
 	initCanvas(){
@@ -61,4 +61,26 @@ export default class CustomEditor{
 	onMouse(event, kak){
 
 	}
+
+	startDrag(event, tag){
+		this.drag.tag=tag;
+		this.drag.dx= event.clientX - parseInt(this.drag.tag.style.left);
+		this.drag.dy= event.clientY - parseInt(this.drag.tag.style.top );
+		//console.log(tag);
+		//console.log(this.drag.tag.style.left, this.drag.tag.style.top);
+		//console.log('down', event.clientX, event.clientY);
+	}
+
+	doDrag(event){
+		//console.log('move', this.drag);
+		if(!this.drag.tag || event.buttons===0)return;
+		this.drag.tag.style.left= event.clientX - this.drag.dx+'px';
+		this.drag.tag.style.top = event.clientY - this.drag.dy+'px';
+	}
+
+	endDrag(){
+		//console.log('up', this.drag);
+		this.drag.tag=null;
+	}
+
 }
