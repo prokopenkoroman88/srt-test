@@ -1,4 +1,4 @@
-import { aWindRose } from './../system.js';
+import Arrow from './../common/Arrow.js';
 import CustomCanvas from './../canvas/CustomCanvas.js';
 //import VirtualCanvas from './../canvas/VirtualCanvas.js';
 //import RealCanvas from './../canvas/RealCanvas.js';
@@ -8,15 +8,8 @@ import PixelColor from './../canvas/PixelColor.js';
 
 
 const ca_None=0,ca_Equal=1,ca_Grad=2,ca_I=3,ca_Y=4,ca_X=5,ca_Dot=6,ca_Bunt=7;
-//const aWindRose = [ {dx: 0,dy: -1}, {dx: 1,dy:-1}, {dx: 1,dy: 0}, {dx: 1,dy: 1}, {dx: 0,dy: 1}, {dx:-1,dy: 1}, {dx:-1,dy: 0}, {dx:-1,dy:-1}, {dx: 0,dy: 0} ];
 const cBtm=0, cUp=1, cTop=2, cDn=3, cNone=4;
 
-function incLook(look, incValue=1){
-	return (look + incValue) % 8;
-};
-function decLook(look, decValue=1){
-	return (look - incValue + 8) % 8;
-};
 
 class PixelVector{//+9.2.22
 
@@ -108,8 +101,10 @@ class PixelVector{//+9.2.22
 
 	createClrCoord(){
 		let aClrCoord = new Array(9);//[0..1]
-		for(let i=0; i<=8; i++)
-			aClrCoord[i]= this.getColor(aWindRose[i].dx, aWindRose[i].dy).getColorCoords();
+		for(let i=0; i<=8; i++){
+			let step = Arrow.step(i);
+			aClrCoord[i]= this.getColor(step.dx, step.dy).getColorCoords();
+		}
 		return aClrCoord;
 	}
 
@@ -247,7 +242,7 @@ class PixelVector{//+9.2.22
 				let z0=this.sides[iSide].z0;
 				let z1=this.sides[iSide].z1;
 				//z0 & z1 - направления розы ветров, где мосты, между мостами - крылья градиента
-				let z=incLook(z0);
+				let z=Arrow.incLook(z0);
 				//let z=(z0+1) % 8;
 
 
@@ -263,7 +258,7 @@ class PixelVector{//+9.2.22
 					this.avgDist[iSide]+=aClrDist[z];
 
 					wide++;
-					z=incLook(z);
+					z=Arrow.incLook(z);
 					//z=(z+1) % 8;					
 				};//avg
 				this.avgAngle[iSide].long=this.avgAngle[iSide].long/wide;
@@ -271,7 +266,7 @@ class PixelVector{//+9.2.22
 				this.avgDist[iSide]=this.avgDist[iSide]/wide;
 
 
-				z=incLook(z0);
+				z=Arrow.incLook(z0);
 				//z=(z0+1) % 8;
 				this.skoAngle[iSide]={lat:0,long:0,};
 				while (z!=z1) {
@@ -281,7 +276,7 @@ class PixelVector{//+9.2.22
 					this.skoAngle[iSide].long+=Math.pow((this.avgAngle[iSide].long-long),2);//оттенок
 					//console.log('skoAngle['+iSide+']: lat='+skoAngle[iSide].lat+' long='+skoAngle[iSide].long+ ' z='+z);
 
-					z=incLook(z);
+					z=Arrow.incLook(z);
 					//z=(z+1) % 8;					
 				};//sko
 
@@ -512,6 +507,33 @@ ca_Bridge://контраст с фоном
 
 	}
 
+	calcCellVectors(){
+		this.calc();
+		let vector={
+			grd: this.mu_Grad,
+			equ: this.mu_Equal,
+		};
+		if(!vector.grd || vector.grd<0)vector.grd=0;
+		if(!vector.equ || vector.equ<0)vector.equ=0;
+		//vector.grd*=(+this.gradDist);
+		vector.gradDist=(+this.gradDist);
+
+
+		let sideCount=this.sides?this.sides.length:0;
+		if(sideCount){
+			vector.vectors = new Array(sideCount);
+			for(let i=0; i<sideCount; i++){
+				vector.vectors[i]={
+					dist:this.dist[i],
+					angle:this.sides[i].angle,
+					wide:this.sides[i].wide,
+					colorDelta:this.avgAngle[i],//long & lat
+				};
+			}
+		};
+
+		return vector;
+	}
 
 
 

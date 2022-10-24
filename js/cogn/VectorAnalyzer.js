@@ -1,4 +1,4 @@
-import { aWindRose } from './../system.js';
+import Arrow from './../common/Arrow.js';
 import PixelColor from './../canvas/PixelColor.js';
 import CustomEditor from './../common/CustomEditor.js';
 import Vectorizer from './Vectorizer.js';
@@ -127,12 +127,21 @@ export default class VectorAnalyzer extends CustomEditor{
 
 		//широта - изменение яркости, широта - изменение оттенка, радиус - величина изменений
 		for(let i=0; i<8; i++){
-			let xx=2+aWindRose[i].dx;
-			let yy=2+aWindRose[i].dy;
+			let xx=2+Arrow.windRose[i].dx;
+			let yy=2+Arrow.windRose[i].dy;
+
+			let cmps='';
+			let cell = this.vectorizer.cells[y+yy][x+xx];
+			console.log(cell);
+			if(cell && cell.cmps)
+			cell.cmps.forEach( function(element, index) {
+				cmps+=' '+element.toFixed(1);
+			});
 			tds[yy*5+xx].innerHTML = 
-			 'ш'+cv.angle[i].lat.toFixed(2)+'<br>'
-			+'д'+cv.angle[i].long.toFixed(2)+'<br>'
-			+'r'+cv.dist[i].toFixed(2);
+cmps;
+//			 'ш'+cv.angle[i].lat.toFixed(2)+'<br>'
+//			+'д'+cv.angle[i].long.toFixed(2)+'<br>'
+//			+'r'+cv.dist[i].toFixed(2);
 		};//i++
 
 		let mu_Equal=cv.mu_Equal;
@@ -145,13 +154,13 @@ export default class VectorAnalyzer extends CustomEditor{
 
 		for(let i=0; i<5; i++){
 			for(let j=0; j<5; j++){
-				let v = this.vectorizer.vectors[y+i-2][x+j-2];
+				let cell = this.vectorizer.cells[y+i-2][x+j-2];
 				//console.log(x+j-2,y+i-2,this.rgba);
 				let pxl  = this.canvas.getPixel(x+j-2,y+i-2);//исходный пиксель
 				let pxl2 = this.canvas.getPixel(x+j-2,y+i-2);//получаемый соседний пиксель
-				if(v && v.vectors){
+				if(cell && cell.vectors){
 
-					v.vectors.forEach((vector)=>{
+					cell.vectors.forEach((vector)=>{
 						//вектор изменения цвета
 
 						let clr = 'hsl('
