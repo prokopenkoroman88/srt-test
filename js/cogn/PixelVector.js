@@ -509,21 +509,24 @@ ca_Bridge://контраст с фоном
 
 	calcCellVectors(){
 		this.calc();
-		let vector={
+		let cell={
+			//x: this.x,
+			//y: this.y,
 			grd: this.mu_Grad,
 			equ: this.mu_Equal,
 		};
-		if(!vector.grd || vector.grd<0)vector.grd=0;
-		if(!vector.equ || vector.equ<0)vector.equ=0;
-		//vector.grd*=(+this.gradDist);
-		vector.gradDist=(+this.gradDist);
+		if(!cell.grd || cell.grd<0)cell.grd=0;
+		if(!cell.equ || cell.equ<0)cell.equ=0;
+		//cell.grd*=(+this.gradDist);
+		cell.gradDist=(+this.gradDist);
 
 
 		let sideCount=this.sides?this.sides.length:0;
 		if(sideCount){
-			vector.vectors = new Array(sideCount);
+			cell.vectors = new Array(sideCount);
 			for(let i=0; i<sideCount; i++){
-				vector.vectors[i]={
+				cell.vectors[i]={
+					cell:cell,//owner
 					dist:this.dist[i],
 					angle:this.sides[i].angle,
 					wide:this.sides[i].wide,
@@ -532,9 +535,43 @@ ca_Bridge://контраст с фоном
 			}
 		};
 
-		return vector;
+		return cell;
 	}
 
+	static compareVectors(v1,v2      ,i=-1,j=-1){
+		let dlong=Math.abs(v1.colorDelta.long - v2.colorDelta.long);
+		if(dlong>Math.PI)
+			dlong=2*Math.PI-dlong;
+		dlong*=((v1.dist + v2.dist)/2);
+		let long  = (1-dlong/Math.PI);
+		let lat   = (1-Math.abs(v1.colorDelta.lat - v2.colorDelta.lat)/Math.PI);
+
+		let dangle= Math.abs(v1.angle - v2.angle);
+		if(dangle>4)
+			dangle=8-dangle;
+
+		let angle = (1-dangle/4);
+		let dist  = 1;//(1-Math.abs(v1.dist - v2.dist)/2);
+
+		let res=//м.б. нужно нормализовать углы
+			//Math.min(long,lat,angle,dist)
+			//(long*lat*angle*dist)
+			(long+lat+angle+dist)/4
+		;
+
+		if(isNaN(res)){
+			console.log(i,j    ,v1,v2);
+				/*
+				console.log(i,j);
+				console.log(v1,v2);
+				console.log('long',(1-Math.abs(v1.colorDelta.long - v2.colorDelta.long)/Math.PI));
+				console.log('lat',(1-Math.abs(v1.colorDelta.lat - v2.colorDelta.lat)/Math.PI));
+				console.log('angle',(1-Math.abs(v1.angle - v2.angle)/4));
+				console.log('dist',(1-Math.abs(v1.dist - v2.dist)/2));
+				*/
+		};
+		return res;
+	}
 
 
 

@@ -97,13 +97,24 @@ export default class VectorAnalyzer extends CustomEditor{
 		this.rectSend.bottom=this.canvas.height-1;
 		this.rectSend.left=Math.round(this.canvas.width/3);
 		this.rectSend.right=this.rectSend.left+Math.round(this.canvas.width/3);
+		this.rectSend.top=300;
+		this.rectSend.bottom=800;
+		this.rectSend.left+=200;
+		this.rectSend.right-=100;
+/*
+		this.rectSend.top=610;
+		this.rectSend.bottom=650;//-35;
+		this.rectSend.left=1180;
+		this.rectSend.right=1220;//-35;
+//*/
 		this.vectorizer.calcMu(this.rectSend);
+		this.vectorizer.gatherMu(this.rectSend);
 
 		this.rectDest.top=0;
 		this.rectDest.bottom=this.canvas.height-1;
 		this.rectDest.left=0;
 		this.rectDest.right=this.rectDest.left+Math.round(this.canvas.width/3);
-		this.vectorizer.showMu(this.rectSend, this.rectDest);
+//?		this.vectorizer.showMu(this.rectSend, this.rectDest);
 	}
 
 	showLupa(x,y){

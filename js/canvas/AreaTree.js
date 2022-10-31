@@ -424,5 +424,13 @@ export default class AreaTree{
 
 	}
 
+	pointInChild(x,y){
+		for(let i=0; i<this.children.length; i++){
+			if(this.children[i].hasPoint(x, y)){
+				return i;
+			};
+		};
+		return -1;//если точки у потомков нет
+	}
 
 }
