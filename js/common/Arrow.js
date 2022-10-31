@@ -34,4 +34,7 @@ export default class Arrow{
 	static decLook(look, decValue=1){
 		return (look - decValue + 8) % 8;
 	}
+	static angleByLook(look){
+		return look/8 * 2*Math.PI;
+	}
 }
