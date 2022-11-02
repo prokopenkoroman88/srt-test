@@ -108,51 +108,14 @@ html, body{
 
 
 
-#top-panel .lupa{
-	position:fixed;
-	top:100px;
-	right:100px;
-}
-
-#top-panel .lupa table{
-	border-collapse: collapse;
-}
-
-#top-panel .lupa td{
-	position: relative;
-	width: 75px;
-	height: 75px
-}
-
-#top-panel .lupa td .vector{
-	position: absolute;
-	left: 50%;
-	top: 50%;
-
-	transform-origin: 50% 0%;
-	background: -webkit-linear-gradient(gray, hsl(var(--hue),100%,var(--light)) );
-	background-position: 50% 0%;
-
-	border: 1px solid gray;
-}
-
-#top-panel .lupa td .vector:after{
-	position: absolute;
-	left: 0%;
-	top: 100%;
-
-	width: 5px;
-	height: 5px;
-	content: '';
-
-	background-color: var(--clr);
-
-	border: 1px solid gray;
-}
 
 #top-panel .btns .active{
 	background-color: gray;
 }
 
+#top-panel .btns .separator{
+	display: inline-block;
+	width: 4px;
+}
 
 

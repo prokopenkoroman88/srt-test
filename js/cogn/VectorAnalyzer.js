@@ -1,5 +1,6 @@
 import Arrow from './../common/Arrow.js';
 import PixelColor from './../canvas/PixelColor.js';
+import RealCanvas from './../canvas/RealCanvas.js';
 import CustomEditor from './../common/CustomEditor.js';
 import Vectorizer from './Vectorizer.js';
 
@@ -7,11 +8,79 @@ import Vectorizer from './Vectorizer.js';
 //const mouseMv=0, mouseDn=1, mouseUp=2;
 //const btnLeft=0, btnRight=2;//from https://developer.mozilla.org/ru/docs/Web/API/Element/mousedown_event
 const modeArrow=0;
+const lupaWidth=500, lupaScale=16*4;
 
 
 export default class VectorAnalyzer extends CustomEditor{
 
 	static get modeArrow(){ return 0; }
+
+	static get modeLupaNone(){ return 0; }
+	static get modeLupaFew(){ return 1; }
+	static get modeLupaWide(){ return 2; }
+
+	set mode(value){
+/*
+		switch (this._mode) {
+			case VectorAnalyzer.modeArrow:
+				this.btnArrow.currHTMLTag.classList.remove('active');
+				break;
+			default:
+				break;
+		};
+
+		switch (value) {
+			case VectorAnalyzer.modeArrow:
+				this.btnArrow.currHTMLTag.classList.add('active');
+				break;
+			default:
+				break;
+		};
+*/
+		this._mode = value;
+	}
+	get mode(){
+		return this._mode;
+	}
+
+	set lupa(value){
+		switch (this._lupa) {
+			case VectorAnalyzer.modeLupaNone:
+				this.btnLupaNone.currHTMLTag.classList.remove('active');
+				break;
+			case VectorAnalyzer.modeLupaFew:
+				this.btnLupaFew.currHTMLTag.classList.remove('active');
+				this.tblLupa.currHTMLTag.style.display = 'none';
+				break;
+			case VectorAnalyzer.modeLupaWide:
+				this.btnLupaWide.currHTMLTag.classList.remove('active');
+				this.cnvLupa.canvas.style.display = 'none';
+				break;
+			default:
+				break;
+		};
+		switch (value) {
+			case VectorAnalyzer.modeLupaNone:
+				this.btnLupaNone.currHTMLTag.classList.add('active');
+				break;
+			case VectorAnalyzer.modeLupaFew:
+				this.btnLupaFew.currHTMLTag.classList.add('active');
+				this.tblLupa.currHTMLTag.style.display = 'block';
+				break;
+			case VectorAnalyzer.modeLupaWide:
+				this.btnLupaWide.currHTMLTag.classList.add('active');
+				this.cnvLupa.canvas.style.display = 'block';
+				break;
+			default:
+				break;
+		};
+		this._lupa = value;
+	}
+	get lupa(){
+		return this._lupa;
+	}
+
+		_lupa=0;
 		x0=8*105;
 		y0=8*287;
 		x1=0;
@@ -45,19 +114,39 @@ export default class VectorAnalyzer extends CustomEditor{
 
 		this.root
 		.div('btns')
-		  .dn()
+		.dn()
 			.div('lupa')//.attr('style','  ')
-			  .dn()
+			.dn()
 				.table().assignTo('tblLupa')
-				  .dn()
+				.dn()
 					.trtd('','',arr)
-				  .up()
-			  .up()
+				.up()
+				.div('')
+				.dn()
+					.tag('canvas','').attr('width',lupaWidth+'px').attr('height',lupaWidth+'px')//.assignTo('cnvLupa')
+				.up()
+			.up()
 			.button('').inner('mu').assignTo('btnMu')
-		  .up();
+			.div('separator')
+			.button('').inner('none').assignTo('btnLupaNone')
+			.button('').inner('Few').assignTo('btnLupaFew')
+			.button('').inner('Wide').assignTo('btnLupaWide')
+		.up();
+
+		this.cnvLupa = new RealCanvas('.btns .lupa canvas');
 
 		this.addOnClick('btnMu', function(){
 			this.calcMu();
+		});
+
+		this.addOnClick('btnLupaNone', function(){
+			this.lupa=VectorAnalyzer.modeLupaNone;
+		});
+		this.addOnClick('btnLupaFew', function(){
+			this.lupa=VectorAnalyzer.modeLupaFew;
+		});
+		this.addOnClick('btnLupaWide', function(){
+			this.lupa=VectorAnalyzer.modeLupaWide;
 		});
 
 	}
@@ -79,7 +168,7 @@ export default class VectorAnalyzer extends CustomEditor{
 				console.log(event.target);
 				//console.log(event.target.clientX,event.target.clientY);
 				console.log(event.offsetX,event.offsetY);
-				this.showLupa(event.offsetX+this.rectSend.left-1,event.offsetY);
+				this.showFewLupa(event.offsetX+this.rectSend.left-1,event.offsetY);
 				if(this.pressed){
 					console.log('onMouse',kak);
 					this.oldX=event.clientX;
@@ -88,7 +177,11 @@ export default class VectorAnalyzer extends CustomEditor{
 			}; break;
 			default:break;
 		};
-
+		if(this.pressed){//mouse event don't matter
+			if(this.lupa==VectorAnalyzer.modeLupaWide)
+				this.showWideLupa(event.offsetX,event.offsetY);
+			//this.showFewLupa(event.offsetX,event.offsetY);
+		};
 	}
 
 	calcMu(){
@@ -117,7 +210,8 @@ export default class VectorAnalyzer extends CustomEditor{
 //?		this.vectorizer.showMu(this.rectSend, this.rectDest);
 	}
 
-	showLupa(x,y){
+	showFewLupa(x,y){
+		if(this.lupa!=VectorAnalyzer.modeLupaFew)return;
 		//PixelVector:
 		this.vectorizer.controlVector.fill(x,y);//.init(x,y)
 		this.vectorizer.controlVector.calc();
@@ -206,5 +300,59 @@ cmps;
 			console.log('skoAngle',cv.skoAngle[0], cv.skoAngle[1]);
 		};
 	}//showLupa
+
+	showWideLupa(x,y){
+		console.log(x,y);
+		//цвета окружающих ячеек:
+		for(let i=0; i<lupaWidth; i++){
+			for(let j=0; j<lupaWidth; j++){
+				let cx=Math.round(x+(j-lupaWidth/2)/lupaScale);
+				let cy=Math.round(y+(i-lupaWidth/2)/lupaScale);
+				let rgba = this.canvas.getRGB(cx,cy);
+				this.cnvLupa.setRGB(j,i,rgba);
+			};//j
+		};//i
+		this.cnvLupa.put();
+
+		//print vectors:
+		let x0=Math.round(x+(-lupaWidth/2)/lupaScale);
+		let x1=Math.round(x+(+lupaWidth/2)/lupaScale);
+		let y0=Math.round(y+(-lupaWidth/2)/lupaScale);
+		let y1=Math.round(y+(+lupaWidth/2)/lupaScale);
+		function toCnv(x2,y2){
+			return {
+				x:Math.round(lupaWidth/2 + (x2-x)*lupaScale),
+				y:Math.round(lupaWidth/2 + (y2-y)*lupaScale)
+				//x : Math.round((x2-x0+0.5)*lupaScale),
+				//y : Math.round((y2-y0+0.5)*lupaScale)
+			};
+		};
+
+		for(let cy=y0; cy<=y1; cy++){
+			for(let cx=x0; cx<=x1; cx++){
+				let cell = this.vectorizer.cells[cy][cx];
+				console.log(cy,cx,cell);
+				if(!cell)continue;
+				if(!cell.vectors)continue;
+				let p0 = toCnv(cx,cy);//moveTo
+				console.log('p0',p0);
+				cell.vectors.forEach((vector)=>{
+					let vectorAngle=Arrow.angleByLook(vector.angle);
+					let vectorDist = vector.dist*0.05*lupaScale;
+					//let vectorDist = 3+Math.log(vector.dist);//*1*lupaScale;
+					if(vectorDist<0)
+						vectorDist=1;
+					let nx = (cx + Math.sin(vectorAngle) * vectorDist);
+					let ny = (cy - Math.cos(vectorAngle) * vectorDist);
+					let p1 = toCnv(nx,ny);//lineTo
+					console.log('p1',p1);
+					let clr=//'hsl(0deg,10%,'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%)';
+					'hsl('+(vector.colorDelta.long/Math.PI*180).toFixed(0)+'deg,100%,'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%)';
+					this.cnvLupa.paintStandardLine(p0,p1,clr);
+				},this);
+			};//cx
+		};//cy
+
+	}//showWideLupa
 
 }
