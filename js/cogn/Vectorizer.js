@@ -1,6 +1,8 @@
 import Arrow from './../common/Arrow.js';
 import { PixelVector } from './PixelVector.js';
 import CustomAnalyzer from './CustomAnalyzer.js';
+import ColorCoords from './items/ColorCoords.js';
+import ColorDelta from './items/ColorDelta.js';
 import { ColorTree, ColorArea, GradientArea, ColorThread } from './ColorArea.js';
 
 
@@ -16,12 +18,48 @@ class Vectorizer extends CustomAnalyzer{
 
 	}
 
+	createCell(x,y){
+		let cell = super.createCell(x,y);
+		let pixel = this.canvas.getPixel(x,y);
+		//cell.clrCoord = pixel.getColorCoords();
+		cell.clrCoord = new ColorCoords(pixel);
+		return cell;
+	}//overrided
+
+	createLookData(cell,look){
+		let neibCell = this.getNeibCell(cell.y, cell.x, look);
+		if(neibCell)
+			return {
+				clrCoord:neibCell.clrCoord,
+			};
+	}//overrided
+
 	calcMu(rectSend){
+		this.rectSend = rectSend;
+
+		console.log('SCAN pixels:');
+		this.stretchRect(this.rectSend,1);//expand
+		this.onSendPixels((i,j,cell)=>{});
+
+		console.log('CALC vectors:');
+		this.stretchRect(this.rectSend,-1);//narrow
+		let aClrCoord = new Array(8);
+		this.pixelVector.initRoundArrays(8);
+		this.onSendPixels(((i,j,cell)=>{
+			let emptyCell=false;
+			this.onCellLooks(cell,((cell,look,lookData)=>{
+				if(!lookData){ emptyCell=true; return; };
+				aClrCoord[look] = lookData.clrCoord;
+			}).bind(this));
+			if(emptyCell) return;
+			this.pixelVector.calcCellVectors(aClrCoord, cell);
+		}).bind(this));
+/*
 		for(let i=rectSend.top; i<=rectSend.bottom; i++){
 
 				
 			if(i%100==0)console.log(i,'/',rectSend.bottom-rectSend.top);
-			this.pixelVector.init(rectSend.left-1,rectSend.top+i);
+			this.pixelVector.init(rectSend.left-1,i);//!//rectSend.top+
 
 			for(let j=rectSend.left; j<=rectSend.right; j++){
 				this.pixelVector.nextStep();
@@ -31,6 +69,7 @@ class Vectorizer extends CustomAnalyzer{
 
 			};//j
 		};//i
+//*/
 	}
 
 	gatherClasters(){//byClasters
@@ -308,8 +347,8 @@ class Vectorizer extends CustomAnalyzer{
 			if(i%100==0)console.log(i);
 				//rgba2 = this.pixelVector.getRGB(0,0);
 				{
-					rgba2[0] = Math.round(cell.grd*cell.gradDist*250);
-					rgba2[1] = Math.round(cell.equ*250);
+					rgba2[0] = Math.round(cell.mu.grd*cell.gradDist*250);
+					rgba2[1] = Math.round(cell.mu.equ*250);
 					rgba2[2] = 0;
 				};
 				//console.log(i,j,rgba2);

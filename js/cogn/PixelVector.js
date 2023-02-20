@@ -1,14 +1,17 @@
 import Arrow from './../common/Arrow.js';
+import Zigzag from './../common/Zigzag.js';
 import CustomCanvas from './../canvas/CustomCanvas.js';
 //import VirtualCanvas from './../canvas/VirtualCanvas.js';
 //import RealCanvas from './../canvas/RealCanvas.js';
-
+import Cell from './items/Cell.js';
+import Hill from './items/Hill.js';
+import ColorDelta from './items/ColorDelta.js';
+import Vector from './items/Vector.js';
 import PixelColor from './../canvas/PixelColor.js';
 
 
 
 const ca_None=0,ca_Equal=1,ca_Grad=2,ca_I=3,ca_Y=4,ca_X=5,ca_Dot=6,ca_Bunt=7;
-const cBtm=0, cUp=1, cTop=2, cDn=3, cNone=4;
 
 
 class PixelVector{//+9.2.22
@@ -21,6 +24,7 @@ class PixelVector{//+9.2.22
 		//какие цвета окружают с 8-ми сторон текущую точку [j,i]
 		this.a9Pxl=[[null,null,null],[null,null,null],[null,null,null]];
 
+		this.zigzag = new Zigzag( ((item1,item2)=>{return (item2-item1).toFixed(3)}) );
 
 	}
 
@@ -89,15 +93,24 @@ class PixelVector{//+9.2.22
 	}
 
 	static angle(d1,d2){
+/*
 		let longitude=Math.atan2(d2.y-d1.y, d2.x-d1.x);//долгота оттенок
 		let latitude =Math.atan2(d2.z-d1.z, Math.sqrt( Math.pow(d2.x-d1.x,2) + Math.pow(d2.y-d1.y,2) ) );//широта  яркость
 		return {lat:latitude, long:longitude};
+*/
+		return new ColorDelta(d1,d2);
 	}
 
 	static gaussian(x, a=1, b=0, c=1){
 		return a*Math.exp(-((x-b)*(x-b))/(2*c*c));
 	}
 
+	initRoundArrays(sectorsCount=8){
+		this.sectorsCount = sectorsCount;
+		this.aClrCoord = new Array(sectorsCount);//[0..1]
+		this.aClrDist = new Array(sectorsCount);//[0..1]
+		this.aClrAngle = new Array(sectorsCount);
+	}
 
 	createClrCoord(){
 		let aClrCoord = new Array(9);//[0..1]
@@ -126,19 +139,16 @@ class PixelVector{//+9.2.22
 
 	calcMu_EqualByMaxDist(aClrDist){
 		let maxDist=0;
-		for(let i=0; i<8; i++){
-			if(aClrDist[i]>maxDist)
-				maxDist=aClrDist[i];
-		};
+		aClrDist.forEach( dist=>{
+			maxDist = Math.max(maxDist, dist);
+		});
 		let mu_Equal = (2-maxDist)/2;
 		return mu_Equal;
 	}
 
 	calcMu_EqualByDistMediana(aClrDist){
 
-		let aDistMediana = new Array(8);
-		for(let i=0; i<8; i++)
-			aDistMediana[i]=aClrDist[i];
+		let aDistMediana = aClrDist.map((element)=>{return element;});
 		
 		aDistMediana.sort(function(a,b){ return a-b; });
 		//8..1 = 9*4 = 36
@@ -156,6 +166,9 @@ class PixelVector{//+9.2.22
 
 	createDistZigzag(aClrDist){
 
+		this.zigzag.putArray(aClrDist);
+		return this.zigzag.extr_list;
+/*
 		let iMinDist=0;
 		for(let i=1; i<8; i++){
 			if(aClrDist[i]<aClrDist[iMinDist])
@@ -201,9 +214,11 @@ class PixelVector{//+9.2.22
 		//for(let z=0; z<aDistZigzag.length; z++)
 			//console.log(aDistZigzag[z]);
 		return aDistZigzag;
+//*/
 	}//createDistZigzag
 
 	createMinDist(aDistZigzag=null){
+/*
 		let aMinDist=[];
 		if(!aDistZigzag)
 			aDistZigzag=this.aDistZigzag;
@@ -211,11 +226,15 @@ class PixelVector{//+9.2.22
 			if(aDistZigzag[z].kind==cBtm)
 				aMinDist.push(z);		
 		return aMinDist;
+*/
 	}
 
 	getBridge(iBridge){
+/*
 		iBridge = iBridge % this.aMinDist.length;
 		return this.aDistZigzag[this.aMinDist[iBridge]];
+*/
+		return this.zigzag.getMin(iBridge);
 	}
 
 	getSide(iSide){
@@ -228,11 +247,31 @@ class PixelVector{//+9.2.22
 		};
 	}
 
+	prepareBoundsToLook(bounds){//zigzag to looks
+		let coeff = 1;//8/this.sectorsCount;
+		return {
+			startBound  : coeff*bounds.startBound,
+			finishBound : coeff*bounds.finishBound,
+		};
+	}
+
 	prepareSides(aClrAngle, aClrDist){
+		this.sides=[];
 		let sideCount=this.aMinDist.length;
 		if(sideCount<2)
 			return sideCount;
 
+		sideCount=this.zigzag.aMin.length;
+		this.sides = new Array(sideCount);
+
+		for(let iSide=0; iSide<sideCount; iSide++){
+			//this.sides[iSide] = this.getSide(iSide);
+			let side = new Hill();
+			side.bounds = this.prepareBoundsToLook( this.zigzag.getLowBounds(iSide) );
+			side.prepare(aClrAngle, aClrDist);
+			this.sides[iSide] =	side;
+		};//for iSide
+/*
 			this.avgAngle=new Array(sideCount);
 			this.skoAngle=new Array(sideCount);
 			this.avgDist =new Array(sideCount);
@@ -287,9 +326,10 @@ class PixelVector{//+9.2.22
 				if(z1<z0)z1+=8;
 				//let wide=z1-z0;
 				this.sides[iSide].angle = ((z0 + z1)/2%8);
-				this.sides[iSide].wide = z1-z0+1;
+				this.sides[iSide].wide = z1-z0;//+1;
 
 			};//for iSide
+//*/
 
 		return sideCount;
 	}
@@ -311,7 +351,7 @@ class PixelVector{//+9.2.22
 			for(let iSide=0; iSide<aMinDist.length; iSide++){
 				let z0=aDistZigzag[aMinDist[iSide]].start + aDistZigzag[aMinDist[iSide]].count-1;
 				let z1=aDistZigzag[aMinDist[(iSide+1) % aMinDist.length]].start;
-				//z0 & z1 - направления розы ветров, где мосты, между мостами - крылья градиента
+				//z0 & z1 - РЅР°РїСЂР°РІР»РµРЅРёСЏ СЂРѕР·С‹ РІРµС‚СЂРѕРІ, РіРґРµ РјРѕСЃС‚С‹, РјРµР¶РґСѓ РјРѕСЃС‚Р°РјРё - РєСЂС‹Р»СЊСЏ РіСЂР°РґРёРµРЅС‚Р°
 				let z=(z0+1) % 8;
 
 
@@ -320,10 +360,10 @@ class PixelVector{//+9.2.22
 				avgDist[iSide]=0;
 				while (z!=z1) {
 					//console.log('avgAngle['+iSide+']='+avgAngle[iSide]+' z='+z);
-					avgAngle[iSide].lat+=aClrAngle[z].lat;//яркость
+					avgAngle[iSide].lat+=aClrAngle[z].lat;//СЏСЂРєРѕСЃС‚СЊ
 					let long=aClrAngle[z].long;
 					if(long<0) long+=Math.PI*2;					
-					avgAngle[iSide].long+=long;//оттенок
+					avgAngle[iSide].long+=long;//РѕС‚С‚РµРЅРѕРє
 					avgDist[iSide]+=aClrDist[z];
 
 					wide++;
@@ -337,10 +377,10 @@ class PixelVector{//+9.2.22
 				z=(z0+1) % 8;
 				skoAngle[iSide]={lat:0,long:0,};
 				while (z!=z1) {
-					skoAngle[iSide].lat+=Math.pow((avgAngle[iSide].lat-aClrAngle[z].lat),2);//яркость
+					skoAngle[iSide].lat+=Math.pow((avgAngle[iSide].lat-aClrAngle[z].lat),2);//СЏСЂРєРѕСЃС‚СЊ
 					let long=aClrAngle[z].long;
 					if(long<0) long+=Math.PI*2;
-					skoAngle[iSide].long+=Math.pow((avgAngle[iSide].long-long),2);//оттенок
+					skoAngle[iSide].long+=Math.pow((avgAngle[iSide].long-long),2);//РѕС‚С‚РµРЅРѕРє
 					//console.log('skoAngle['+iSide+']: lat='+skoAngle[iSide].lat+' long='+skoAngle[iSide].long+ ' z='+z);
 
 					z=(z+1) % 8;					
@@ -383,16 +423,16 @@ class PixelVector{//+9.2.22
 		return mu_Grad;
 	}//calcMu_GradByDistZigzag
 	calcGradDist(){
-		return Math.sqrt(this.avgDist[0]+this.avgDist[1]);//чтоб умножить на дистанцию обоих крыльев градиента
+		return Math.sqrt(this.sides[0].avgDist+this.sides[1].avgDist);//чтоб умножить на дистанцию обоих крыльев градиента
 	}
 	calcMu_Grad(){
 		let mu_Grad=0;
 
-		let mu_lat = PixelVector.gaussian(this.avgAngle[0].lat+this.avgAngle[1].lat);//1
-		mu_lat = mu_lat * (1-this.skoAngle[0].lat) * (1-this.skoAngle[1].lat);
+		let mu_lat = PixelVector.gaussian(this.sides[0].avgAngle.lat+this.sides[1].avgAngle.lat);//1
+		mu_lat = mu_lat * (1-this.sides[0].skoAngle.lat) * (1-this.sides[1].skoAngle.lat);
 
-		let mu_long = PixelVector.gaussian(Math.abs(this.avgAngle[0].long-this.avgAngle[1].long), 1, Math.PI);
-		mu_long = mu_long * (1-this.skoAngle[0].long) * (1-this.skoAngle[1].long);
+		let mu_long = PixelVector.gaussian(Math.abs(this.sides[0].avgAngle.long-this.sides[1].avgAngle.long), 1, Math.PI);
+		mu_long = mu_long * (1-this.sides[0].skoAngle.long) * (1-this.sides[1].skoAngle.long);
 
 		mu_Grad = Math.max(mu_lat,mu_long);//?даже если градиент маленький, он всё равно градиент//*gradDist;
 		//mu_Grad *= this.gradDist;//с учетом крутизны градиента
@@ -407,11 +447,13 @@ class PixelVector{//+9.2.22
 	}//calcMu_Grad
 
 
-	calc(){
+	calc(aClrCoord, cell=null){
 
-
-
-
+		if(cell){
+			this.clrCoord = cell.clrCoord;
+			this.x=cell.x;
+			this.y=cell.y;
+		};
 
 /*
 				let pixel = new PixelColor(rgba);
@@ -423,16 +465,40 @@ class PixelVector{//+9.2.22
 				pixel.getColorCoords();//x:[-1..1], y:[-1..1], z:[-1..1]
 */
 
-		let aClrCoord = this.createClrCoord();
-		let aClrDist = this.createClrDist(aClrCoord);
+		//let aClrCoord = this.createClrCoord();
+		if(this.sectorsCount==8){
+			aClrCoord.forEach( (clrCoord, look)=>{
+				this.aClrCoord[look] = clrCoord;
+			},this);
+		}else
+		if(this.sectorsCount==16){
+			aClrCoord.forEach( (clrCoord, look)=>{
+				this.aClrCoord[look*2] = clrCoord;
+			},this);
+			for(look = 1; look<sectorsCount; look+=2){
+				let last=this.aClrCoord[look-1];
+				let next=this.aClrCoord[look+1];
+				this.aClrCoord[look] = ColorCoords.between(last,next);
+			};
+		};
+
+		//let aClrDist = this.createClrDist(aClrCoord);
+		this.aClrCoord.forEach( (clrCoord, look)=>{
+			this.aClrDist[look] = PixelVector.dist(this.clrCoord, clrCoord);
+		},this);
+
 		//this.mu_Equal = this.calcMu_EqualByMaxDist(aClrDist);
-		this.mu_Equal = this.calcMu_EqualByDistMediana(aClrDist);
+		this.mu_Equal = this.calcMu_EqualByDistMediana(this.aClrDist);
 		if(this.mu_Equal==1) return;
-		let aClrAngle = this.createClrAngle(aClrCoord);
+
+		//let aClrAngle = this.createClrAngle(aClrCoord);
+		this.aClrCoord.forEach( (clrCoord, look)=>{
+			this.aClrAngle[look] = PixelVector.angle(this.clrCoord, clrCoord);
+		},this);
 
 
-		this.angle=aClrAngle;
-		this.dist =aClrDist;
+		this.angle=this.aClrAngle;
+		this.dist =this.aClrDist;
 
 /*
 dist:
@@ -449,9 +515,9 @@ how many bridges
 		//this.mu_Equal = this.calcMu_EqualByDistMediana(aClrDist);
 
 		//массив секторов с цветовыми расстояниями от цветовых координат центрального пикселя
-		this.aDistZigzag=this.createDistZigzag(aClrDist);
-		this.aMinDist=this.createMinDist();
-		let sideCount=this.prepareSides(aClrAngle, aClrDist);
+		this.aDistZigzag=this.createDistZigzag(this.aClrDist);
+		this.aMinDist=this.zigzag.aMin;//this.createMinDist();
+		let sideCount=this.prepareSides(this.aClrAngle, this.aClrDist);
 		if(sideCount==2){
 			this.gradDist=this.calcGradDist();
 			this.mu_Grad=this.calcMu_Grad();
@@ -507,31 +573,23 @@ ca_Bridge://контраст с фоном
 
 	}
 
-	calcCellVectors(){
-		this.calc();
-		let cell={
-			//x: this.x,
-			//y: this.y,
-			grd: this.mu_Grad,
-			equ: this.mu_Equal,
-		};
-		if(!cell.grd || cell.grd<0)cell.grd=0;
-		if(!cell.equ || cell.equ<0)cell.equ=0;
+	calcCellVectors(aClrCoord,cell){
+		this.calc(aClrCoord,cell);
+		cell.setMu('grd', this.mu_Grad);
+		cell.setMu('equ', this.mu_Equal);
 		//cell.grd*=(+this.gradDist);
 		cell.gradDist=(+this.gradDist);
+		cell.dist=this.dist;
 
 
 		let sideCount=this.sides?this.sides.length:0;
 		if(sideCount){
-			cell.vectors = new Array(sideCount);
 			for(let i=0; i<sideCount; i++){
-				cell.vectors[i]={
-					cell:cell,//owner
-					dist:this.dist[i],
-					angle:this.sides[i].angle,
-					wide:this.sides[i].wide,
-					colorDelta:this.avgAngle[i],//long & lat
-				};
+				let vector = new Vector(cell);
+				//vector.initAngle(this.sides[i].angle,this.dist[i],this.sides[i].width);
+				vector.initLook(this.sides[i].look,this.sides[i].avgDist,this.sides[i].sectors);//this.dist[i]
+				vector.colorDelta=this.sides[i].avgAngle;//long & lat
+				cell.addVector(vector);
 			}
 		};
 
@@ -542,7 +600,7 @@ ca_Bridge://контраст с фоном
 		let dlong=Math.abs(v1.colorDelta.long - v2.colorDelta.long);
 		if(dlong>Math.PI)
 			dlong=2*Math.PI-dlong;
-		dlong*=((v1.dist + v2.dist)/2);
+		dlong*=((v1.length + v2.length)/2);
 		let long  = (1-dlong/Math.PI);
 		let lat   = (1-Math.abs(v1.colorDelta.lat - v2.colorDelta.lat)/Math.PI);
 

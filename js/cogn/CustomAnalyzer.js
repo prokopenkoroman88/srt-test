@@ -1,5 +1,6 @@
 import Arrow from './../common/Arrow.js';
 import PixelColor from './../canvas/PixelColor.js';
+import Cell from './items/Cell.js';
 
 class CustomAnalyzer{
 
@@ -24,6 +25,13 @@ class CustomAnalyzer{
 		};
 	}
 
+	stretchRect(rect,value=1){//1 - expand, -1 - narrow
+		rect.left-=value;
+		rect.top-=value;
+		rect.right+=value;
+		rect.bottom+=value;
+	}
+
 	areCoordsOnBorder(i,j,rect){
 		return (i==rect.top || j==rect.left || i==rect.bottom || j==rect.right);
 	}
@@ -36,33 +44,46 @@ class CustomAnalyzer{
 		return this.cells[i1][j1];
 	}
 
-	onSendPixels(func){
-		for(let i=this.rectSend.top; i<this.rectSend.bottom; i++){
-			for(let j=this.rectSend.left; j<this.rectSend.right; j++){
+	createCell(x,y){
+		return new Cell(x,y);
+	}
+
+	onRectPixels(rect,func){
+		for(let i=rect.top; i<rect.bottom; i++){
+			for(let j=rect.left; j<rect.right; j++){
 				let cell = this.cells[i][j];
+				if(!cell){
+					cell = this.createCell(j,i);
+					this.cells[i][j] = cell;
+				};
 				func(i,j,cell);
 			};//j
 		};//i
+	}
+
+	onSendPixels(func){
+		this.onRectPixels(this.rectSend,func);
 	}
 
 	onDestPixels(func){
-		for(let i=this.rectDest.top; i<this.rectDest.bottom; i++){
-			for(let j=this.rectDest.left; j<this.rectDest.right; j++){
-				let cell = this.cells[i][j];
-				func(i,j,cell);
-			};//j
-		};//i
+		this.onRectPixels(this.rectDest,func);
+	}
+
+	createLookData(cell,look){
+		return {};
 	}
 
 	onCellLooks(cell,func,startLook=0,finishLook=7){//Brightness???? Contrast???? Hue???
-		for(let look=startLook; look!=finishLook; look=Arrow.incLook(look) ){//look=Isochromizer.incLook(look)
-			let lookData = this.getLookData(cell,look);  //cell.aSub[look].bridgeBrightness;
-			// if(!lookData){
-			// 	console.log('['+look+'].lookData==null');
-			// 	return;
-			// };
-			func(cell,look,lookData);//?
-		};
+		if(!cell)
+			return;
+		Arrow.forLooks(startLook,finishLook,((look)=>{
+			let lookData = cell.aLookData[look];
+			if(!lookData){
+				lookData = this.createLookData(cell,look);
+				cell.aLookData[look] = lookData;
+			};
+			func(cell,look,lookData);
+		}).bind(this));
 	}
 
 	showFon(){
