@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Game-field</title>
+	<link rel="stylesheet" href="../css/style.css">
+	<link rel="stylesheet" href="../css/game.css">
+	<link rel="shortcut icon" href="../images/favicon.png">
+</head>
+<body>
+	<a href="/">home</a>
+	<div id="top-panel">
+		<button>paint grass</button>
+		<button>paint rect</button>
+	</div>
+
+	<h1>GAME</h1>
+	<div id="game-window">
+		<div id="game-field">
+			<div id="units">
+				<div class="unit unit-man man1"></div>
+				<div class="unit unit-man man2"></div>
+			</div>
+			<canvas class="dn"></canvas>
+			<canvas class="up"></canvas>
+			<div id="game-rect"></div>
+			<div></div>
+
+		</div>
+	</div>
+
+	<canvas class="third"></canvas>
+
+<!-- 	<script src=".\..\js\script.js" type="module"></script>	 -->
+<script type="module">
+
+import ColorMap from '../js/canvas/VirtualCanvas.js';
+import Canvas from '../js/canvas/RealCanvas.js';
+import PixelColor from '../js/canvas/PixelColor.js';
+import Main from '../js/Main.js';
+
+
+function rand(rgba,diap){
+	for(let i=0; i<3; i++)
+		rgba[i]=ColorMap.normByte(rgba[i]+Math.random()*diap-diap/2);
+	rgba[3]=255;
+	return rgba;
+};
+
+
+function createImage(height,width){
+	let img0 = new Image();
+	img0.height = 100;
+	img0.width = 100;
+	console.log('img0:',img0);
+	return img0;
+};
+
+
+function loadImage(image, src, loadFunc=null){
+	image.addEventListener('load',()=>{
+		if(loadFunc)
+			loadFunc(image)
+	});//image.load
+	image.src = src;
+	//image.crossOrigin = 'anonymous';
+};
+
+
+function paintGrass(){
+	let x0=15,y0=3,w=50,h=70;
+
+	png.style.display='none';
+	//img.crossOrigin = 'anonymous';
+
+	for(let y=0; y<main.pb.canvas.height; y++){
+		for(let x=0; x<main.pb.canvas.width; x++){
+
+			if(((y) % 32)==0  )continue;
+			if(((x) % 32)==0  )continue;
+
+			let rgba=rand([125,225,75,255],50);
+			main.pb.setRGB(x,y,rgba);
+		};//x++
+	};//y++
+
+	x0=1;y0=13;
+	w=32;h=32;
+	main.pb.ctx.drawImage(png,x0,y0,w,h);
+
+	main.pb.put();
+
+};//func click
+
+
+function paintRect(){
+	//green rect:
+	let cm = new ColorMap(32,50);//h,w,bRes
+	cm.paintRect(0,0,50,2,[0,64,64,100]);//top
+	cm.paintRect(0,0,2,32,[0,64,64,100]);//left
+	cm.paintRect(0,30,50,2,[0,64,64,100]);//bottom
+	cm.paintRect(48,0,2,32,[0,64,64,100]);//right
+	cm.setRGB(10,20,[0,0,255,255]);
+	//pb2.applMap(50,40,cm);
+	//pb2.applMap(150,40,cm);
+}
+
+
+//---------------------------------
+
+
+var main = new Main('');
+main.resize(2000,2500);
+
+
+let pc = new PixelColor('rgba(16,32,48,128)');
+let pc1 = new PixelColor('DodgerBlue');
+console.log('rgba(16,32,48,128)',pc);//PixelColor {r: 16, g: 32, b: 48, a: 255}
+console.log('DodgerBlue',pc1);
+
+
+//?? pb2
+
+
+var img = new Image();
+var png = new Image();
+//canvas.crossOrigin = 'anonymous';//?
+
+loadImage(img, '../images/z0.bmp')
+loadImage(png, '../images/favicon.png', function(image){
+	//????????//canvas=document.querySelector('#game-field canvas');//'.canvas'
+	main.pb.init('#game-field canvas.dn');
+	console.log('canvas.width='+main.pb.canvas.width);
+	console.log('canvas.height='+main.pb.canvas.height);
+	console.log('png=',image);
+
+	let x0=15,y0=3,w=90,h=70;
+	//?	ctx.drawImage(img,x0,y0,w,h);
+
+	x0=1;y0=13;
+	//?	ctx.drawImage(png,x0,y0,w,h);
+
+	//image.crossOrigin = 'anonymous';
+	//image.style.display='none';
+});
+
+
+
+let btns = document.querySelectorAll('#top-panel button');
+
+btns[0].onclick=paintGrass;
+btns[1].onclick=paintRect;
+
+main.pb2.put();
+
+</script>
+</body>
+</html>

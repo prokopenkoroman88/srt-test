@@ -207,7 +207,7 @@ document.body.append(this.imgMan);
 this.imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 
-this.imgMan.src = 'images/units/man.bmp';
+this.imgMan.src = './../images/units/man.bmp';
 
 		this.imgMan.addEventListener('load', function(){
 
