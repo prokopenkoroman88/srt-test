@@ -1,4 +1,107 @@
+class Branch{
+
+	constructor(){
+		this.tag=null;
+		this.children=[];
+	}
+
+	get currHTMLTag(){ return this.tag }
+
+	byIndices(indices){
+		let branch = this;
+		indices.forEach( (index, level)=>{
+			branch = branch.children[index];
+		});
+		return branch;
+	}
+
+	byName(name){
+		let result=null;
+		function find(branch){
+			if(branch.name==name)
+				result = branch;
+			if(result)
+				return;
+			if(!Array.isArray(branch.children))
+				return;//it's innerHTML
+			branch.children.forEach( (child, index)=>{
+				if(result)
+					return;
+				find(child);
+			});
+		};
+		find(this);
+		return result;
+	}
+
+};
+
+
 export default class Tag {
+
+	static cr(tagName='', css='', attrs={}, children=[]){
+		if(!tagName)
+			tagName='div';
+		let result = document.createElement(tagName);
+
+		let cssList = css.split(' ');//'#id-of-element first-class second-class'
+		if(cssList.length>0)
+		cssList.forEach( function(item, i) {
+			if(item!=''){
+				if(item.charAt(0)=='#')
+					result.id = item.slice(1);//id=""
+				else
+					result.classList.add(item);//class=""
+			};
+		});
+
+		for(let key in attrs){
+			if(key=='style'){//Array
+				for(let styleKey in attrs[key]){
+					let styleValue = attrs[key][styleKey];
+					//result.style[styleKey] = styleValue;//style.=
+					result.style.setProperty(styleKey, styleValue);//--color:
+				};
+			}
+			else
+				result[key] = attrs[key];//'onclick' must be lowercase
+		};
+
+		if(Array.isArray(children)){
+			children.forEach((child)=>{
+				result.append(child);
+			}, this);
+		}
+		else
+			result.innerHTML=children;
+
+		return result;//Створює HTML тег заданої конфігурації з унутрішніми тегами
+	}
+
+	static create(scheme_tree){
+		let tagName = scheme_tree.tag || '';
+		let css = scheme_tree.css || '';
+		let attrs = scheme_tree.attrs || {};
+		let result = new Branch();
+		if(scheme_tree.name)
+			result.name = scheme_tree.name;
+		let tags = [];//only HTML tags
+		if(scheme_tree.children){
+			if(Array.isArray(scheme_tree.children)){
+				scheme_tree.children.forEach((scheme_branch)=>{
+					let branch = Tag.create(scheme_branch);//recursion
+					tags.push(branch.tag);
+					result.children.push(branch);
+				});
+			}
+			else{
+				tags = scheme_tree.children;
+				result.children = scheme_tree.children;
+			}
+		};
+		result.tag = Tag.cr(tagName, css, attrs, tags);
+		return result;//Повертає дерево із Branch зі створеними в них тегами
+	}
 
 	constructor(parent,currHTMLTag){//currHTMLTag = root = div.excel
 		this.init(currHTMLTag);

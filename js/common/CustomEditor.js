@@ -28,6 +28,48 @@ export default class CustomEditor{
 		this.init();
 	}
 
+	sch_movable(caption, scheme_inner, name=undefined){
+		if(!Array.isArray(scheme_inner))
+			scheme_inner=[scheme_inner];
+
+		return {
+			css:'movable',
+			name:name,
+			attrs:{
+				style:{
+					left:'0px',
+					top:'0px',
+				},
+			},
+			children:[
+				{
+					tag:'h3',
+					children:caption,
+					attrs:{
+						onmousedown:(event)=>{this.startDrag(event,event.target.parentElement);},
+					}
+				},
+				...scheme_inner,
+			]
+		};
+	}
+
+	sch_btn(caption, click, name=undefined){
+		return {
+			tag:'button',
+			attrs:{ onclick:click },
+			children:caption,
+			name:name,
+		};
+	}
+
+	branchByScheme(scheme, dest=null){
+		let branch = Tag.create(scheme);
+		if(dest)
+			dest.append(branch.tag);
+		return branch;
+	}
+
 	init(){
 		this.drag={tag:null,};
 	}
@@ -36,6 +78,35 @@ export default class CustomEditor{
 		this.addOnCanvas('mousemove', (event)=>{this.onMouse(event,CustomEditor.mouseMv);});
 		this.addOnCanvas('mousedown', (event)=>{this.onMouse(event,CustomEditor.mouseDn);});
 		this.addOnCanvas('mouseup'  , (event)=>{this.onMouse(event,CustomEditor.mouseUp);});
+	}
+
+	setRect(rect, x0,y0,x1,y1){
+		rect.left = x0<x1?x0:x1;
+		rect.right = x0>x1?x0:x1;
+		rect.top = y0<y1?y0:y1;
+		rect.bottom = y0>y1?y0:y1;
+	}
+
+	prepareRectDest(position){
+		let offs_x=0, offs_y=0;
+		switch (position) {
+			case 'right':
+				offs_x=this.rectSend.right;
+				offs_y=this.rectSend.top;
+				break;
+			case 'bottom':
+				offs_x=this.rectSend.left;
+				offs_y=this.rectSend.bottom;
+				break;
+			default:
+				// statements_def
+				break;
+		};
+
+		this.rectDest.top=offs_y;
+		this.rectDest.bottom=offs_y+this.rectSend.bottom-this.rectSend.top;
+		this.rectDest.left=offs_x;
+		this.rectDest.right=offs_x+this.rectSend.right-this.rectSend.left;
 	}
 
 

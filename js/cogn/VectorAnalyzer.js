@@ -14,29 +14,15 @@ const lupaWidth=500, lupaScale=16*4;
 export default class VectorAnalyzer extends CustomEditor{
 
 	static get modeArrow(){ return 0; }
+	static get modeRectSend(){ return 1; }
 
 	static get modeLupaNone(){ return 0; }
 	static get modeLupaFew(){ return 1; }
 	static get modeLupaWide(){ return 2; }
 
 	set mode(value){
-/*
-		switch (this._mode) {
-			case VectorAnalyzer.modeArrow:
-				this.btnArrow.currHTMLTag.classList.remove('active');
-				break;
-			default:
-				break;
-		};
-
-		switch (value) {
-			case VectorAnalyzer.modeArrow:
-				this.btnArrow.currHTMLTag.classList.add('active');
-				break;
-			default:
-				break;
-		};
-*/
+		this.control.mode.btns[this._mode || 0].classList.remove('active');
+		this.control.mode.btns[value].classList.add('active');
 		this._mode = value;
 	}
 	get mode(){
@@ -44,42 +30,17 @@ export default class VectorAnalyzer extends CustomEditor{
 	}
 
 	set lupa(value){
-		switch (this._lupa) {
-			case VectorAnalyzer.modeLupaNone:
-				this.btnLupaNone.currHTMLTag.classList.remove('active');
-				break;
-			case VectorAnalyzer.modeLupaFew:
-				this.btnLupaFew.currHTMLTag.classList.remove('active');
-				this.tblLupa.currHTMLTag.style.display = 'none';
-				break;
-			case VectorAnalyzer.modeLupaWide:
-				this.btnLupaWide.currHTMLTag.classList.remove('active');
-				this.cnvLupa.canvas.style.display = 'none';
-				break;
-			default:
-				break;
-		};
-		switch (value) {
-			case VectorAnalyzer.modeLupaNone:
-				this.btnLupaNone.currHTMLTag.classList.add('active');
-				break;
-			case VectorAnalyzer.modeLupaFew:
-				this.btnLupaFew.currHTMLTag.classList.add('active');
-				this.tblLupa.currHTMLTag.style.display = 'block';
-				break;
-			case VectorAnalyzer.modeLupaWide:
-				this.btnLupaWide.currHTMLTag.classList.add('active');
-				this.cnvLupa.canvas.style.display = 'block';
-				break;
-			default:
-				break;
-		};
+		this.control.lupa.btns[this._lupa || 0].classList.remove('active');
+		this.control.lupa.btns[value].classList.add('active');
+		this.view.frmFewLupa.style.display = value==VectorAnalyzer.modeLupaFew?'block':'none';
+		this.view.frmWideLupa.style.display = value==VectorAnalyzer.modeLupaWide?'block':'none';
 		this._lupa = value;
 	}
 	get lupa(){
 		return this._lupa;
 	}
 
+		_mode=0;
 		_lupa=0;
 		x0=8*105;
 		y0=8*287;
@@ -100,10 +61,12 @@ export default class VectorAnalyzer extends CustomEditor{
 		this.vectorizer = new Vectorizer(this.canvas);
 
 		this.mode=VectorAnalyzer.modeArrow;
+		this.lupa=VectorAnalyzer.modeLupaNone;
 	}
 
 	initPanel(){
 
+/*
 		let arr = new Array(5);
 		for(let i=0; i<5; i++)
 		{
@@ -134,7 +97,48 @@ export default class VectorAnalyzer extends CustomEditor{
 		.up();
 
 		this.cnvLupa = new RealCanvas('.btns .lupa canvas');
+//*/
+		this.panel={
+			top: document.querySelector('#top-panel'),//==this.root
+			left: document.querySelector('#left-panel'),
+			content: document.querySelector('#content-panel'),
+			right: document.querySelector('#right-panel'),
+			bottom: document.querySelector('#bottom-panel'),
+		};
 
+		this.control={
+			lupa:{},
+			mode:{},
+			cell:{},
+			area:{},
+		};
+
+
+		let scheme_control = this.assembleControl();
+		let control = this.branchByScheme(scheme_control, this.panel.top);//this.root.currHTMLTag
+
+		this.control.mode.btns = control.byName('mode_btns').children.map((child)=>{return child.tag; });
+		this.control.lupa.btns = control.byName('lupa_btns').children.map((child)=>{return child.tag; });
+//		this.control.cell.btns = control.byName('cell_btns').children.map((child)=>{return child.tag; });
+
+
+		let scheme_view = this.assembleView();
+		let views = this.branchByScheme(scheme_view, this.panel.top);
+
+		this.view = {
+			coords : views.byName('coords').currHTMLTag,
+			tblLupa : views.byName('lupaFew').currHTMLTag,//children[0];
+			cnvLupa : new RealCanvas('#top-panel .view canvas'),
+
+			frmFewLupa : views.byName('few lupa frame').currHTMLTag,
+			frmWideLupa : views.byName('wide lupa frame').currHTMLTag,
+		};
+
+
+		document.body.addEventListener('mousemove', (event)=>{this.doDrag(event); });
+		document.body.addEventListener('mouseup', (event)=>{this.endDrag(); });
+
+/*
 		this.addOnClick('btnMu', function(){
 			this.calcMu();
 		});
@@ -148,17 +152,113 @@ export default class VectorAnalyzer extends CustomEditor{
 		this.addOnClick('btnLupaWide', function(){
 			this.lupa=VectorAnalyzer.modeLupaWide;
 		});
+*/
+	}
 
+	assembleControl(){
+		let mode_btns=[
+			this.sch_btn('Arrow',()=>{this.mode=VectorAnalyzer.modeArrow}),
+			this.sch_btn('RectSend',()=>{this.mode=VectorAnalyzer.modeRectSend}),
+		];
+
+		let lupa_btns=[
+			this.sch_btn('none',()=>{this.lupa=VectorAnalyzer.modeLupaNone}),
+			this.sch_btn('Few',()=>{this.lupa=VectorAnalyzer.modeLupaFew}),
+			this.sch_btn('Wide',()=>{this.lupa=VectorAnalyzer.modeLupaWide}),
+		];
+
+
+		let scheme_mode = {
+			css:'btns',
+			name:'mode_btns',
+			children:mode_btns,
+		};
+
+		let scheme_cell = {
+			css:'btns',
+			children:[
+				//sch_btn('mu',()=>this.calcMu()),
+				this.sch_btn('mu',()=>{this.vectorizer.calcMu(this.rectSend)}),
+				this.sch_btn('show mu',()=>{
+					this.prepareRectDest('right');
+					this.vectorizer.showMu(this.rectSend, this.rectDest);
+				}),
+			]
+		};
+
+		let scheme_area = {
+			css:'btns',
+			children:[
+				this.sch_btn('gather mu',()=>{this.vectorizer.gatherMu(this.rectSend)}),
+			]
+		};
+
+		let scheme_lupa = {
+			css:'btns',
+			name:'lupa_btns',
+			children:lupa_btns,
+		};
+
+		let scheme_control = this.sch_movable('CONTROL', [
+				scheme_mode,
+				scheme_cell,
+				scheme_area,
+				scheme_lupa,
+			]);
+		scheme_control.css+=' control';
+
+
+		return scheme_control;
+	}
+
+	assembleView(){
+		let scheme_vector_table = { tag:'table', children:[], name:'lupaFew' };
+		for(let i=0; i<5; i++)
+		{
+			scheme_vector_table.children.push({ tag:'tr', children:[] });
+			for(let j=0; j<5; j++)
+				scheme_vector_table.children[i].children.push({ tag:'td',  });//таблиця відображення векторів
+		};
+
+		let scheme_vector_canvas = {
+			tag:'canvas',
+			attrs:{ width:lupaWidth, height:lupaWidth, }//+'px'
+		};
+
+		let scheme_view = {
+				css:'view',
+				children:[
+					{
+						css:'coords',
+						name:'coords'
+					},
+					this.sch_movable('Few Lupa', scheme_vector_table, 'few lupa frame'),
+					this.sch_movable('Wide lupa, CANVAS', scheme_vector_canvas, 'wide lupa frame'),
+				]
+		};
+
+		return scheme_view;
 	}
 
 	onMouse(event,kak){
+		this.view.coords.innerHTML = 'x:'+event.offsetX+', y:'+event.offsetY;
 		switch (kak) {
 			case CustomEditor.mouseDn:{
 				this.pressed=true;
 				this.oldX=event.clientX;
 				this.oldY=event.clientY;
+				if(this.mode==VectorAnalyzer.modeRectSend){
+					console.log(event);
+					this.rectSend.left = event.offsetX;
+					this.rectSend.top = event.offsetY;
+				}
 			}; break;
 			case CustomEditor.mouseUp:{
+				if(this.mode==VectorAnalyzer.modeRectSend){
+					this.setRect(this.rectSend, this.rectSend.left,this.rectSend.top,event.offsetX,event.offsetY);
+					console.log('this.rectSend',this.rectSend);
+					this.mode = VectorAnalyzer.modeArrow;
+				};
 				this.oldX=-1;
 				this.oldY=-1;
 				this.pressed=false;
@@ -180,35 +280,9 @@ export default class VectorAnalyzer extends CustomEditor{
 		if(this.pressed){//mouse event don't matter
 			if(this.lupa==VectorAnalyzer.modeLupaWide)
 				this.showWideLupa(event.offsetX,event.offsetY);
-			/**/this.showFewLupa(event.offsetX,event.offsetY);
+			if(this.lupa==VectorAnalyzer.modeLupaFew)
+				this.showFewLupa(event.offsetX,event.offsetY);
 		};
-	}
-
-	calcMu(){
-		//init  this.vectorizer.vectors
-		this.rectSend.top=0;
-		this.rectSend.bottom=this.canvas.height-1;
-		this.rectSend.left=Math.round(this.canvas.width/3);
-		this.rectSend.right=this.rectSend.left+Math.round(this.canvas.width/3);
-		this.rectSend.top=300;
-		this.rectSend.bottom=800;
-		this.rectSend.left+=200;
-		this.rectSend.right-=100;
-/*
-		this.rectSend.top=610;
-		this.rectSend.bottom=650;//-35;
-		this.rectSend.left=1180;
-		this.rectSend.right=1220;//-35;
-//*/
-
-		this.vectorizer.calcMu(this.rectSend);
-		this.vectorizer.gatherMu(this.rectSend);
-
-		this.rectDest.top=0;
-		this.rectDest.bottom=this.canvas.height-1;
-		this.rectDest.left=0;
-		this.rectDest.right=this.rectDest.left+Math.round(this.canvas.width/3);
-//?		this.vectorizer.showMu(this.rectSend, this.rectDest);
 	}
 
 	showFewLupa(x,y){
@@ -220,7 +294,7 @@ export default class VectorAnalyzer extends CustomEditor{
 		let cell = this.vectorizer.cells[y][x];
 		this.vectorizer.controlVector.calc(aClrCoord, cell);
 		let  cv = this.vectorizer.controlVector;
-		let tbl = this.tblLupa.currHTMLTag;
+		let tbl = this.view.tblLupa;
 		let tds = tbl.querySelectorAll('td');
 
 		//цвета окружающих ячеек:
@@ -279,13 +353,18 @@ cmps;
 						+(pxl.getBrightness()*100+((vector.colorDelta.lat/(Math.PI/2))*50)*vector.length ).toFixed(1)+'%'//0..1 + -PI/2..+PI/2
 						+')';
 						
-						tds[i*5+j].innerHTML+='<div class="vector" style="  --clr:'+clr+';'
-							+' --hue:'+(vector.colorDelta.long/Math.PI*180).toFixed(0)+'deg;'
-							+' --light:'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%;'
-							+' width:'+vector.width.toFixed(0)+'px;'
-							+' height:'+vector.length*100+'px;'
-							+' transform:rotate('+((vector.angle-4)/8*360).toFixed(0)+'deg);'
-							+'"></div>';
+						let scheme_vector={
+							css:'vector',
+							attrs:{style:{
+								'--clr':clr,
+								'--hue':(vector.colorDelta.long/Math.PI*180).toFixed(0)+'deg',
+								'--light':(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%',
+								'width':vector.width.toFixed(0)+'px',
+								'height':vector.length*100+'px',
+								'transform':'rotate('+((vector.look-4)/8*360).toFixed(0)+'deg)',
+							}}
+						};
+						this.branchByScheme(scheme_vector, tds[i*5+j]);
 					});
 
 				};
@@ -341,10 +420,10 @@ cmps;
 				let pnt = toCnv(cx,cy);
 				for(let i=-lupaScale/2; i<lupaScale/2; i++ )
 					for(let j=-lupaScale/2; j<lupaScale/2; j++ )
-						this.cnvLupa.setRGB(pnt.x+j,pnt.y+i,rgba);
+						this.view.cnvLupa.setRGB(pnt.x+j,pnt.y+i,rgba);
 			};
 		};
-		this.cnvLupa.put();
+		this.view.cnvLupa.put();
 
 		for(let cy=y0; cy<=y1; cy++){
 			for(let cx=x0; cx<=x1; cx++){
@@ -383,9 +462,9 @@ cmps;
 					pnt1 = toCnv(nx,ny);//lineTo
 					console.log(pnt0,pnt1);
 					if(cx==x && cy==y)
-						this.cnvLupa.paintStandardLine(pnt0,pnt1,'white');
+						this.view.cnvLupa.paintStandardLine(pnt0,pnt1,'white');
 					else
-						this.cnvLupa.paintStandardLine(pnt0,pnt1,'gray');
+						this.view.cnvLupa.paintStandardLine(pnt0,pnt1,'gray');
 				},this);
 
 
@@ -402,7 +481,7 @@ cmps;
 					console.log('p1',p1);
 					let clr=//'hsl(0deg,10%,'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%)';
 					'hsl('+(vector.colorDelta.long/Math.PI*180).toFixed(0)+'deg,100%,'+(50+vector.colorDelta.lat/Math.PI*50).toFixed(0)+'%)';
-					this.cnvLupa.paintStandardLine(p0,p1,clr);
+					this.view.cnvLupa.paintStandardLine(p0,p1,clr);
 
 					let widthAngle=vector.width//Arrow.angleByLook(vector.width);
 					let vectorAngleL=vectorAngle-widthAngle/2;
@@ -411,12 +490,12 @@ cmps;
 					nx = (cx + Math.sin(vectorAngleL) * vectorDist);
 					ny = (cy - Math.cos(vectorAngleL) * vectorDist);
 					let p1L = toCnv(nx,ny);//lineTo
-					this.cnvLupa.paintStandardLine(p0,p1L,clr);
+					this.view.cnvLupa.paintStandardLine(p0,p1L,clr);
 
 					nx = (cx + Math.sin(vectorAngleR) * vectorDist);
 					ny = (cy - Math.cos(vectorAngleR) * vectorDist);
 					let p1R = toCnv(nx,ny);//lineTo
-					this.cnvLupa.paintStandardLine(p0,p1R,clr);
+					this.view.cnvLupa.paintStandardLine(p0,p1R,clr);
 
 					let vectorAngleL2=vectorAngle-widthAngle/4;
 					let vectorAngleR2=vectorAngle+widthAngle/4;
@@ -429,11 +508,11 @@ cmps;
 					ny = (cy - Math.cos(vectorAngleR2) * vectorDist);
 					let p1R2 = toCnv(nx,ny);//lineTo
 
-					//this.cnvLupa.paintStandardLine(p1L,p1R,clr);
-					this.cnvLupa.paintStandardLine(p1L,p1L2,clr);
-					this.cnvLupa.paintStandardLine(p1L2,p1,clr);
-					this.cnvLupa.paintStandardLine(p1,p1R2,clr);
-					this.cnvLupa.paintStandardLine(p1R2,p1R,clr);
+					//this.view.cnvLupa.paintStandardLine(p1L,p1R,clr);
+					this.view.cnvLupa.paintStandardLine(p1L,p1L2,clr);
+					this.view.cnvLupa.paintStandardLine(p1L2,p1,clr);
+					this.view.cnvLupa.paintStandardLine(p1,p1R2,clr);
+					this.view.cnvLupa.paintStandardLine(p1R2,p1R,clr);
 				},this);
 			};//cx
 		};//cy

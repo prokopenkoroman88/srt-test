@@ -1,22 +1,56 @@
 
+/* ==================== control ==================== */
 
-#top-panel .lupa{
+#top-panel .control{
 	position:fixed;
+	background-color: rgba(255,255,255,0.5);
+/*
 	top:100px;
 	right:100px;
+*/
 }
 
-#top-panel .lupa table{
+#top-panel .control>div{
+	display: inline-block;
+	vertical-align: middle;
+	margin: 5px 10px;
+}
+
+#top-panel .control>div>button{
+	display: block;
+	user-select:none;
+}
+
+/* ==================== view ==================== */
+
+#top-panel .view{
+	position:fixed;
+	top:50px;
+	left:50px;
+}
+
+#top-panel .view .coords{
+	position: fixed;
+	user-select:none;
+	top: 30px;
+	left: 50px;
+	padding: 2px;
+	font-family: 'Courier new';
+	background-color: rgba(255,255,255,0.5);
+	/*text-shadow: -1px 0px white, 1px 0px white, 0px -1px white, 0px 1px white;*/
+}
+
+#top-panel .view table{
 	border-collapse: collapse;
 }
 
-#top-panel .lupa td{
+#top-panel .view td{
 	position: relative;
 	width: 75px;
 	height: 75px
 }
 
-#top-panel .lupa td .vector{
+#top-panel .view td .vector{
 	position: absolute;
 	left: 50%;
 	top: 50%;
@@ -28,7 +62,7 @@
 	border: 1px solid gray;
 }
 
-#top-panel .lupa td .vector:after{
+#top-panel .view td .vector:after{
 	position: absolute;
 	left: 0%;
 	top: 100%;
@@ -42,6 +76,6 @@
 	border: 1px solid gray;
 }
 
-#top-panel .lupa canvas{
+#top-panel .view canvas{
 	border: 2px solid red;
 }

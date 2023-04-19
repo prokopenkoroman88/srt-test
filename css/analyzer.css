@@ -1,0 +1,43 @@
+
+html{
+	height: 100%;
+}
+
+body{
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+header{
+	height: 30px;
+}
+
+#body-panel{
+	min-height: calc(100% - 30px - 30px);
+	max-height: calc(100% - 30px - 30px);
+	display: flex;
+	flex-direction: row;
+}
+
+#left-panel{
+	width: 50px;
+}
+
+#content-panel{
+	overflow: scroll;
+}
+
+#right-panel{
+	width: 50px;
+}
+
+footer{
+	height: 30px;
+}
+
+
+#top-panel, #left-panel, #right-panel, #bottom-panel{
+	background-color: silver;
+	border: 1px solid silver;
+}

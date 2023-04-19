@@ -5,19 +5,23 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Picture analyzer</title>
 	<link rel="stylesheet" href="../css/style.css">
+	<link rel="stylesheet" href="../css/analyzer.css">
 	<link rel="stylesheet" href="../css/vector.css">
 	<link rel="shortcut icon" href="../images/favicon.png">
 </head>
 <body>
-	<a href="/">home</a>
-	<div id="top-panel"></div>
-
-<canvas id="cnv1"></canvas>
-
-
-
-
-
+	<nav>
+		<a href="/">home</a>
+	</nav>
+	<header id="top-panel"></header>
+	<div id="body-panel">
+		<aside id="left-panel"></aside>
+		<main id="content-panel">
+			<canvas id="cnv1"></canvas>
+		</main>
+		<aside id="right-panel"></aside>
+	</div>
+	<footer id="bottom-panel"></footer>
 
 
 <!--	<script src="../js/pict-script.js" type="module"></script>	-->
@@ -40,7 +44,7 @@ const pictMode = pictModeVectorize;
 
 let imgMan = new Image();
 //canvas.crossOrigin = 'anonymous';//?
-document.body.append(imgMan);
+document.querySelector('#content-panel').append(imgMan);
 imgMan.style.visibility = 'hidden';
 //this.imgMan.style.display = 'none';
 

@@ -3,6 +3,18 @@ html, body{
 	padding: 0px;
 }
 
+#top-panel{
+	position: relative;
+}
+
+.movable{
+	position: absolute;
+}
+
+.movable h3{
+	margin: 5px 0px;
+	text-align: center;
+}
 
 #top-panel .btns .active{
 	background-color: gray;
