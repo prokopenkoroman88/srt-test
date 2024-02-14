@@ -1,9 +1,9 @@
-import Arrow from './../common/Arrow.js';
-import { PixelVector } from './PixelVector.js';
-import CustomAnalyzer from './CustomAnalyzer.js';
-import ColorCoords from './items/ColorCoords.js';
-import ColorDelta from './items/ColorDelta.js';
-import { ColorTree, ColorArea, GradientArea, ColorThread } from './ColorArea.js';
+import Arrow from './../../common/Arrow.js';
+import { PixelVector } from './../PixelVector.js';
+import CustomAnalyzer from './../custom/CustomAnalyzer.js';
+import ColorCoords from './../items/ColorCoords.js';
+import ColorDelta from './../items/ColorDelta.js';
+import { ColorTree, ColorArea, GradientArea, ColorThread } from './../ColorArea.js';
 
 
 class Vectorizer extends CustomAnalyzer{

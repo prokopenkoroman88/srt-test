@@ -1,6 +1,6 @@
-import Arrow from './../common/Arrow.js';
-import PixelColor from './../canvas/PixelColor.js';
-import Cell from './items/Cell.js';
+import Arrow from './../../common/Arrow.js';
+import PixelColor from './../../canvas/PixelColor.js';
+import Cell from './../items/Cell.js';
 
 class CustomAnalyzer{
 

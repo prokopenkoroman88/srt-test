@@ -6,6 +6,10 @@ class Cell{
 		this.aLookData = new Array(8);
 	}
 
+	data(look){
+		return this.aLookData[look%8];
+	}
+
 	addBridge(bridge){
 		if(!this.bridges)
 			this.bridges=[];
