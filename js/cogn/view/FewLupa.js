@@ -58,7 +58,7 @@ export default class FewLupa extends CustomView{
 			let cy=this.center.y+i-this.tableOffset;
 			for(let j=0; j<this.tableVolume; j++){
 				let cx=this.center.x+j-this.tableOffset;
-				let cell = this.analyzer.cells[cy][cx];
+				let cell = this.model.getCell(cy,cx);
 				if(!cell)
 					continue;
 				func(cell, {j, i}, this.tds[i*this.tableVolume+j]);
@@ -75,19 +75,18 @@ export default class FewLupa extends CustomView{
 			let xx=this.tableOffset+step.dx;
 			let yy=this.tableOffset+step.dy;
 
-			let cell = this.analyzer.cells[this.center.y+yy][this.center.x+xx];
+			let cell = this.model.getCell(this.center.y+yy,this.center.x+xx);
 			let td = this.tds[yy*this.tableVolume+xx];
 			func(cell,look,td);
 		};//i
 	}
 
-	refresh(x,y){
-		this.center={x,y};
+	refresh(){
 		//PixelVector:
 		this.analyzer.controlVector.initRoundArrays(8);
-		this.analyzer.controlVector.fill(x,y);//.init(x,y)
+		this.analyzer.controlVector.fill(this.center.x,this.center.y);//.init(x,y)
 		let aClrCoord = this.analyzer.controlVector.createClrCoord();
-		let cell = this.analyzer.cells[y][x];
+		let cell = this.model.getCell(this.center.y,this.center.x);
 		this.analyzer.controlVector.calc(aClrCoord, cell);
 
 		let  cv = this.analyzer.controlVector;
@@ -96,7 +95,7 @@ export default class FewLupa extends CustomView{
 
 		//кольори оточуючих комірок:
 		this.forEachTD((cell, point, td)=>{
-				let rgba = this.analyzer.canvas.getPixel(cell.x,cell.y);
+				let rgba = this.model.canvas.getPixel(cell.x,cell.y);
 				if(!rgba) return;//continue;
 				td.style.backgroundColor=rgba.toColor();
 				td.style.color=rgba.inverse().toColor();
@@ -127,7 +126,7 @@ export default class FewLupa extends CustomView{
 		this.tds[2*5+2].innerHTML = 'екв='+mu_Equal+'<br>грд='+mu_Grad;
 
 		this.forEachTD((cell, point, td)=>{
-			let pxl  = this.analyzer.canvas.getPixel(cell.x,cell.y);//поточний піксель
+			let pxl  = this.model.canvas.getPixel(cell.x,cell.y);//поточний піксель
 			if(!cell)
 				return;
 			if(cell.vectors)

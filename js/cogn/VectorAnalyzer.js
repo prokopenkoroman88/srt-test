@@ -2,7 +2,9 @@ import Arrow from './../common/Arrow.js';
 import PixelColor from './../canvas/PixelColor.js';
 import RealCanvas from './../canvas/RealCanvas.js';
 import CustomEditor from './../common/CustomEditor.js';
+import CognModel from './CognModel.js';
 import Vectorizer from './analyzers/Vectorizer.js';
+import Crawling from './analyzers/Crawling.js';
 
 import FewLupa from './view/FewLupa.js';
 import WideLupa from './view/WideLupa.js';
@@ -44,23 +46,19 @@ export default class VectorAnalyzer extends CustomEditor{
 
 		_mode=0;
 		_lupa=0;
-		x0=8*105;
-		y0=8*287;
-		x1=0;
-		y1=0;
-		//w=8*20;//80;//0;
-		//h=8*2;//100;//00;
-		w=8*80;//0;
-		h=8*50;//00;
 
 	init(){
 		super.init();
+		this.model= new CognModel(this.canvas);
+		this.fewLupa.model = this.model;
+		this.wideLupa.model = this.model;
 
 		const w=8*80, h=8*50;
 		this.rectSend={left:8*105, top:8*287, right:8*105+w, bottom:8*287+h,  };
 		this.rectDest={left:8*0, top:8*0, right:w, bottom:h};
 
-		this.vectorizer = new Vectorizer(this.canvas);
+		this.vectorizer = new Vectorizer(this.model);
+		this.crawling = new Crawling(this.model);
 
 		this.mode=VectorAnalyzer.modeArrow;
 		this.lupa=VectorAnalyzer.modeLupaNone;
@@ -109,6 +107,7 @@ export default class VectorAnalyzer extends CustomEditor{
 		//html tags:
 		this.fewLupa.table = this.view.tblLupa;
 		this.wideLupa.canvas = this.view.cnvLupa;
+		this.wideLupa.control.mode.btns=views.byName('mode_btns').children.map((child)=>{return child.tag; });
 
 		document.body.addEventListener('mousemove', (event)=>{this.doDrag(event); });
 		document.body.addEventListener('mouseup', (event)=>{this.endDrag(); });
@@ -142,6 +141,9 @@ export default class VectorAnalyzer extends CustomEditor{
 				this.sch_btn('show mu',()=>{
 					this.prepareRectDest('right');
 					this.vectorizer.showMu(this.rectSend, this.rectDest);
+				}),
+				this.sch_btn('crawl',()=>{
+					this.crawling.scanDeltas(this.rectSend);
 				}),
 			]
 		};
@@ -214,11 +216,6 @@ export default class VectorAnalyzer extends CustomEditor{
 				this.pressed=false;
 			}; break;
 			case CustomEditor.mouseMv:{
-				console.log(event);
-				console.log(event.target);
-				//console.log(event.target.clientX,event.target.clientY);
-				console.log(event.offsetX,event.offsetY);
-				//this.showFewLupa(event.offsetX+this.rectSend.left-1,event.offsetY);
 				if(this.pressed){
 					console.log('onMouse',kak);
 					this.oldX=event.clientX;
@@ -237,12 +234,12 @@ export default class VectorAnalyzer extends CustomEditor{
 
 	showFewLupa(x,y){
 		this.fewLupa.analyzer=this.vectorizer;
-		this.fewLupa.refresh(x,y);
+		this.fewLupa.paintBy(x,y);
 	}
 
 	showWideLupa(x,y){
 		this.wideLupa.analyzer=this.vectorizer;
-		this.wideLupa.refresh(x,y);
+		this.wideLupa.paintBy(x,y);
 	}
 
 }

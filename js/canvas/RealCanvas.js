@@ -1,5 +1,6 @@
 import CustomCanvas from './CustomCanvas.js';
 import VirtualCanvas from './VirtualCanvas.js';
+import PixelColor from './PixelColor.js';
 
 export default class RealCanvas extends CustomCanvas{
 
@@ -82,6 +83,43 @@ export default class RealCanvas extends CustomCanvas{
 	}
 
 
+	paintLine(from={x:0,y:0}, to={x:0,y:0}, color, opacity=1){
+		if(!opacity)
+			return;
+		let rgba=color;
+		if(!Array.isArray(rgba)){
+			let pixel = new PixelColor(color);
+			rgba=pixel.toArray();
+		};
+
+		let vH=Math.abs(to.y-from.y);//+1
+		let vW=Math.abs(to.x-from.x);//+1
+		let N=vH>vW?vH:vW;
+		if(!N)
+			return;
+		let di=(to.y-from.y)/N;//+1
+		let dj=(to.x-from.x)/N;//+1
+		for(let k=0; k<N; k++){
+
+			let i=Math.round(from.y+k*di);
+			let j=Math.round(from.x+k*dj);
+			if( (i<0)||(i>=this.height)||(j<0)||(j>=this.width) )
+				continue;
+			if(opacity<1){
+				let rgba_old=this.getRGB(j,i);
+				let rgba_new=this.encodeColor(
+					rgba_old[0] + (rgba[0]-rgba_old[0])*opacity,
+					rgba_old[1] + (rgba[1]-rgba_old[1])*opacity,
+					rgba_old[2] + (rgba[2]-rgba_old[2])*opacity,
+					rgba_old[3] + (rgba[3]-rgba_old[3])*opacity,
+				);
+				this.setRGB(j,i,rgba_new);
+			}
+			else
+				this.setRGB(j,i,rgba);
+		}
+		//need put() after
+	}
 
 	moveTo(p){
 		this.ctx.beginPath();

@@ -7,8 +7,9 @@ import { ColorTree, ColorArea, GradientArea, ColorThread } from './../ColorArea.
 
 
 class Vectorizer extends CustomAnalyzer{
-	constructor(canvas){
-		super(canvas);
+
+	init(){
+		super.init();
 
 		this.pixelVector = new PixelVector(this.canvas);
 		this.controlVector = new PixelVector(this.canvas);//?for ShowLupa
@@ -20,9 +21,6 @@ class Vectorizer extends CustomAnalyzer{
 
 	createCell(x,y){
 		let cell = super.createCell(x,y);
-		let pixel = this.canvas.getPixel(x,y);
-		//cell.clrCoord = pixel.getColorCoords();
-		cell.clrCoord = new ColorCoords(pixel);
 		return cell;
 	}//overrided
 
@@ -100,7 +98,7 @@ class Vectorizer extends CustomAnalyzer{
 				console.log(i,'/',this.rectSend.bottom-this.rectSend.top);
 			for(let j=this.rectSend.left; j<=this.rectSend.right; j++){
 				//console.log(j,'/',rectSend.left,rectSend.right);
-				let cell = this.cells[i][j];
+				let cell = this.getCell(i,j);//cells[i][j];
 				prepareCell(i,j,cell);
 				let area;
 				if(this.tree.listNear.length>0){
@@ -108,7 +106,7 @@ class Vectorizer extends CustomAnalyzer{
 					area = findArea(i,j,cell,this.tree);
 				};
 				if(!area){
-					console.log('new area', this.tree.listNear.length);
+					//console.log('new area', this.tree.listNear.length);
 					area = new ColorArea(this.tree, this.canvas.getRGB(j,i));
 					prepareArea(area,cell);
 					this.tree.listNear.push(area);
@@ -317,7 +315,7 @@ class Vectorizer extends CustomAnalyzer{
 			if(index%1000==0)
 				console.log(index,'/',this.tree.listReady.length);
 			let rgba = area.color.toArray();
-			console.log(index, area);
+			//console.log(index, area);
 			for(let i=area.rect.y0; i<=area.rect.y1; i++){
 				for(let j=area.rect.x0; j<=area.rect.x1; j++){
 					if(area.hasPoint(j,i)){

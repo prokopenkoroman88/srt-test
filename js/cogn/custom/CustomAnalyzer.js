@@ -4,12 +4,29 @@ import Cell from './../items/Cell.js';
 
 class CustomAnalyzer{
 
-	constructor(canvas){
-		this.canvas=canvas;
-		this.cells = new Array(this.canvas.height);//[];//[height][width]
-		for(let i=0; i<this.canvas.height; i++)
-			this.cells[i] = new Array(this.canvas.width);
+	constructor(model){
+		this.model=model;
+		if(!this.model.cells)
+			this.model.initCells();
+		this.initParams();
+		this.init();
 	}
+
+	get canvas(){ return this.model.canvas; }
+
+	initParams(){
+		this.params={
+			logging:{
+				byGrid:true,
+			},
+			grid:{
+				height:100,
+				width:100,
+			},
+		};
+	}
+
+	init(){}
 
 	setScale(rectSend,rectDest){
 		this.rectSend=rectSend;
@@ -37,24 +54,26 @@ class CustomAnalyzer{
 	}
 
 	getNeibCell(i,j,look){
-		let step=Arrow.windRose[look];
-		let i1=i+step.dy;
-		let j1=j+step.dx;
-		if(i1<0 || j1<0 || i1>=this.canvas.height || j1>=this.canvas.width) return null;
-		return this.cells[i1][j1];
+		return this.model.getCell(i,j,look);
 	}
 
 	createCell(x,y){
-		return new Cell(x,y);
+		let pixel = this.canvas.getPixel(x,y);
+		return new Cell(x,y,pixel);
 	}
 
 	onRectPixels(rect,func){
+		const bLog=this.params.logging.byGrid;
+		if(bLog)
+			console.log('rows between:',rect.top,rect.bottom);
 		for(let i=rect.top; i<rect.bottom; i++){
+			if(bLog && i%this.params.grid.height==0)
+				console.log(i);
 			for(let j=rect.left; j<rect.right; j++){
-				let cell = this.cells[i][j];
+				let cell = this.model.getCell(i,j);
 				if(!cell){
 					cell = this.createCell(j,i);
-					this.cells[i][j] = cell;
+					this.model.setCell(i,j,cell);
 				};
 				func(i,j,cell);
 			};//j

@@ -19,6 +19,14 @@ const aPointSect=
 ];
 
 export default class Arrow{
+	static N = 0;
+	static NE = 1;
+	static E = 2;
+	static SE = 3;
+	static S = 4;
+	static SW = 5;
+	static W = 6;
+	static NW = 7;
 	static get windRose(){
 		return aWindRose;
 	}
@@ -26,6 +34,8 @@ export default class Arrow{
 		return aPointSect;
 	}
 	static step(look){
+		if(typeof look == 'string')
+			look = Arrow[look];
 		return aWindRose[look];
 	}
 	static incLook(look, incValue=1){

@@ -1,8 +1,11 @@
 
 export default class CustomView{
 
-	constructor(editor){
+	constructor(editor, model=null){
 		this.editor=editor;
+		this.model=model;
+		if(!this.model)
+			this.model=this.editor.model;
 		this.init();
 	}
 
@@ -24,7 +27,7 @@ export default class CustomView{
 
 		for(let cy=y0; cy<=y1; cy++){
 			for(let cx=x0; cx<=x1; cx++){
-				let cell = this.analyzer.cells[cy][cx];
+				let cell = this.model.getCell(cy,cx);
 				if(!cell)
 					continue;
 				func(cell, {x:cx, y:cy});
@@ -51,6 +54,12 @@ export default class CustomView{
 		x=Math.max(0,Math.min(x,1));
 		let y=Math.pow(1-Math.pow(1-x,2),0.5)/2;
 		return y;
+	}
+
+	paintBy(x,y){
+		console.log(x,y);
+		this.center={x,y};
+		this.refresh();
 	}
 
 }
