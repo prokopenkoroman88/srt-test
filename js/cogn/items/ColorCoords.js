@@ -36,9 +36,15 @@ class ColorCoords{
 			pixel=new PixelColor(color);
 
 	try {
+/*
 		this.brightness=pixel.getBrightness();//Широта, яскравість 0 .. 1 //lat
 		this.contrast=pixel.getContrast();//Радіус, контраст 0 .. +1 //rad
 		this.hue=pixel.getHue();//Довгота, відтінок 0 .. 2*PI //long
+*/
+		let hsl = PixelColor.calcHSL(pixel.toArray());
+		this.brightness=hsl.brightness;//Широта, яскравість 0 .. 1 //lat
+		this.contrast=hsl.contrast;//Радіус, контраст 0 .. +1 //rad
+		this.hue=hsl.hue;//Довгота, відтінок 0 .. 2*PI //long
 		this.coords=pixel.getColorCoords();//x:[-1..1], y:[-1..1], z:[-1..1]
 	} catch(e) {
 		console.log(e);

@@ -38,17 +38,22 @@ export default class Arrow{
 			look = Arrow[look];
 		return aWindRose[look];
 	}
+	static normLook(look){
+		return (look + 8) % 8;
+	}
 	static incLook(look, incValue=1){
-		return (look + incValue + 8) % 8;
+		return Arrow.normLook(look + incValue);
 	}
 	static decLook(look, decValue=1){
-		return (look - decValue + 8) % 8;
+		return Arrow.normLook(look - decValue);
 	}
 	static invLook(look){//inverse
 		return Arrow.incLook(look,4);
 	}
 
 	static forLooks(startLook,finishLook,func){
+		startLook=Arrow.normLook(startLook);
+		finishLook=Arrow.normLook(finishLook);
 		let times=finishLook-startLook+1;
 		if(finishLook<startLook) times+=8;
 		let look=startLook;

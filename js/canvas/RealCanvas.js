@@ -26,7 +26,8 @@ export default class RealCanvas extends CustomCanvas{
 		}
 		else
 		this.canvas=document.querySelector(selector);//'#game-field canvas'
-		this.ctx = this.canvas.getContext('2d');
+		this.ctx = this.canvas.getContext('2d', { willReadFrequently:true });
+		//Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true
 
 		super.resize(this.canvas.height,this.canvas.width);
 

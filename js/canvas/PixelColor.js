@@ -121,6 +121,56 @@ export default class PixelColor {
 		return hue % 1530;
 	}
 
+	static calcHSL(rgba){
+		//https://www.rapidtables.com/convert/color/rgb-to-hsl.html
+		let r = rgba[0]/255;
+		let g = rgba[1]/255;
+		let b = rgba[2]/255;
+		let minC = Math.min(r,g,b);
+		let maxC = Math.max(r,g,b);
+		let dltC = maxC-minC;
+		let brightness = (maxC+minC)/2;
+		let contrast = dltC/(1-Math.abs(2*brightness-1));
+		if(isNaN(contrast))
+			contrast=0;
+		let hue = 0;
+		if(dltC){
+			if(Math.abs(maxC-r)<0.001)
+				hue = (((g-b)/dltC)%6)*(Math.PI/3);
+			if(Math.abs(maxC-g)<0.001)
+				hue = (((b-r)/dltC)+2)*(Math.PI/3);
+			if(Math.abs(maxC-b)<0.001)
+				hue = (((r-g)/dltC)+4)*(Math.PI/3);
+			if(hue<0)
+				hue+=Math.PI*2;
+		};
+		return {brightness, contrast, hue};
+	}
+
+	static calcRGB(brightness,contrast,hue){
+		//https://www.rapidtables.com/convert/color/hsl-to-rgb.html
+		let c = (1-Math.abs(2*brightness-1))*contrast;
+		let x = c*(1-Math.abs( (hue/(Math.PI/3))%2 -1 ));
+		let m = brightness - c/2;
+
+		let sector = Math.floor(hue/(Math.PI/3));//0..5
+		let r1=0, g1=0, b1=0;
+		switch (sector) {
+			case 0: r1=c; g1=x; break;
+			case 1: r1=x; g1=c; break;
+			case 2: g1=c; b1=x; break;
+			case 3: g1=x; b1=c; break;
+			case 4: r1=x; b1=c; break;
+			case 5: r1=c; b1=x; break;
+			default: break;
+		}
+		let r = Math.min(255,Math.round((r1+m)*255));
+		let g = Math.min(255,Math.round((g1+m)*255));
+		let b = Math.min(255,Math.round((b1+m)*255));
+		let rgba =[r,g,b,255];
+		return rgba;
+	}
+
 	getBrightness(){//Яркость [0..1] снизу вверх
 		return PixelColor.calcBrightness(this.toArray())/255;
 	}
@@ -134,11 +184,12 @@ export default class PixelColor {
 	}
 
 	getColorCoords(){
-		let radius = this.getContrast();
+		let hsl = PixelColor.calcHSL(this.toArray());
+		let radius = hsl.contrast;
 		return {
-			x:Math.sin(this.getHue())*radius, 
-			y:Math.cos(this.getHue())*radius, 
-			z:this.getBrightness()*2-1
+			x:Math.sin(hsl.hue)*radius,
+			y:Math.cos(hsl.hue)*radius,
+			z:hsl.brightness*2-1
 		};
 		//x:[-1..1], y:[-1..1], z:[-1..1]
 	}
