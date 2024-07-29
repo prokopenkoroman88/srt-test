@@ -10,6 +10,7 @@ class CustomAnalyzer{
 			this.model.initCells();
 		this.initParams();
 		this.init();
+		this.errors=[];
 	}
 
 	get canvas(){ return this.model.canvas; }
@@ -24,6 +25,23 @@ class CustomAnalyzer{
 				width:100,
 			},
 		};
+	}
+
+	addError(text){
+		this.errors.push(text);
+	}
+
+	requireStatus(statusPath, methodName='', errorText=''){
+		if(!this.model.getReadyStatus(statusPath)){
+			if(!errorText){
+				let className=this.constructor.name;
+				errorText=`${className}.${methodName} requires status '${statusPath}'`;
+			};
+			this.addError(errorText);
+			return false;
+		}
+		else
+			return true;
 	}
 
 	init(){}
@@ -53,6 +71,10 @@ class CustomAnalyzer{
 		return (i==rect.top || j==rect.left || i==rect.bottom || j==rect.right);
 	}
 
+	areCoordsInRect(i,j,rect){
+		return (i<=rect.top || j>=rect.left || i<=rect.bottom || j<=rect.right);
+	}
+
 	getNeibCell(i,j,look){
 		return this.model.getCell(i,j,look);
 	}
@@ -66,10 +88,10 @@ class CustomAnalyzer{
 		const bLog=this.params.logging.byGrid;
 		if(bLog)
 			console.log('rows between:',rect.top,rect.bottom);
-		for(let i=rect.top; i<rect.bottom; i++){
+		for(let i=rect.top; i<=rect.bottom; i++){
 			if(bLog && i%this.params.grid.height==0)
 				console.log(i);
-			for(let j=rect.left; j<rect.right; j++){
+			for(let j=rect.left; j<=rect.right; j++){
 				let cell = this.model.getCell(i,j);
 				if(!cell){
 					cell = this.createCell(j,i);
@@ -88,20 +110,21 @@ class CustomAnalyzer{
 		this.onRectPixels(this.rectDest,func);
 	}
 
-	createLookData(cell,look){
+	createLookData(cell,look,neibCell){
 		return {};
 	}
 
-	onCellLooks(cell,func,startLook=0,finishLook=7){//Brightness???? Contrast???? Hue???
+	onCellLooks(cell,func,startLook=0,finishLook=7){
 		if(!cell)
 			return;
 		Arrow.forLooks(startLook,finishLook,((look)=>{
 			let lookData = cell.aLookData[look];
+			let neibCell = this.getNeibCell(cell.y, cell.x, look);
 			if(!lookData){
-				lookData = this.createLookData(cell,look);
+				lookData = this.createLookData(cell,look,neibCell);
 				cell.aLookData[look] = lookData;
 			};
-			func(cell,look,lookData);
+			func(cell,look,lookData,neibCell);
 		}).bind(this));
 	}
 

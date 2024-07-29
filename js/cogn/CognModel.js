@@ -1,10 +1,31 @@
 import Arrow from './../common/Arrow.js';
+import StatusTree from './../common/StatusTree.js';
 
 export default class CognModel {
 
 	constructor(canvas){
+		this.params={
+			lookData:{
+				half:false,
+				start:0,
+				finish:7,
+			},
+		};
+		this.status= new StatusTree();
 		this.canvas=canvas;
 		this.cells=null;
+	}
+
+	setReadyStatus(statusPath, value=true){
+		this.status.setStatus(statusPath, value);
+	}
+
+	resetReadyStatus(statusPath=''){
+		this.status.resetStatus(statusPath);
+	}
+
+	getReadyStatus(statusPath){
+		return this.status.getStatus(statusPath);
 	}
 
 	get height(){ return this.canvas.height }
